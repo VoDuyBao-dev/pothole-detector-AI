@@ -1,0 +1,56 @@
+# Windows-specific
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+
+# VS Code
+.vscode/
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+*.swp
+*.swo
+
+# Environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.env
+local_settings.py
+
+# Database files
+*.mdf
+*.ldf
+*.bak
+*.sqlproj
+*.sqlproj.user
+*.sqlite3
+
+# Logs
+*.log
+
+# Coverage
+.coverage
+.coverage.*
+
+# Temporary and generated files
+build/
+dist/
+tmp/
+
+# docker
+*.yml
+Dockerfile
+.dockerignore
