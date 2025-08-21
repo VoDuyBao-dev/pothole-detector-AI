@@ -1,0 +1,93 @@
+<!-- =========================
+FILE 2: dashboard.html
+Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đồ thống kê, dark/light toggle.
+========================= -->
+{% load static%}
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard · Pothole AI</title>
+  <link rel="stylesheet" href="{% static 'my_app/css/dashboard.css' %}">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      {% include 'my_app/sidebar.html' %}
+    </aside>
+
+    <section class="main">
+      <header class="topbar">
+        <div>
+          <h2 style="margin:0">Tổng quan hệ thống</h2>
+          <div style="color:var(--muted); font-size:12px">Thống kê trong ngày · <span id="today"></span></div>
+        </div>
+        <div class="actions">
+          {% comment %} <button class="btn" id="themeToggle">Sáng/Tối</button> {% endcomment %}
+          <button class="btn primary" id="refreshBtn">Làm mới</button>
+        </div>
+      </header>
+
+      <div class="wrap">
+        <div class="cards">
+          <div class="card sm-4">
+            <div class="stat">
+              <div>
+                <div class="label">Số ổ gà (hôm nay)</div>
+                <div class="value" id="kpiPotholes">—</div>
+              </div>
+              <div class="badge" style="background: rgba(126,234,130,.18)">OK</div>
+            </div>
+          </div>
+          <div class="card sm-4">
+            <div class="stat">
+              <div>
+                <div class="label">Camera đang hoạt động</div>
+                <div class="value" id="kpiCameras">—</div>
+              </div>
+              <div class="badge" style="background: rgba(116,187,238,.18)">ONLINE</div>
+            </div>
+          </div>
+          <div class="card sm-4">
+            <div class="stat">
+              <div>
+                <div class="label">Độ chính xác (ước tính)</div>
+                <div class="value" id="kpiAcc">—%</div>
+              </div>
+              <div class="badge" style="background: rgba(253,145,253,.18)">Model v1</div>
+            </div>
+          </div>
+
+          <div class="card sm-6">
+            <h3 style="margin:0 0 8px 0">Biểu đồ số lượng ổ gà</h3>
+            <div class="legend"><span class="dot"></span> Số ổ gà theo giờ</div>
+            <div class="chartBox">
+              <canvas id="chart"></canvas>
+            </div>
+          </div>
+
+          <div class="card sm-6">
+            <h3 style="margin:0 0 8px 0">Sự kiện gần đây</h3>
+            <table class="table" id="eventsTable">
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Vị trí</th>
+                  <th>Camera</th>
+                  <th>Độ tin cậy</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- JS render -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="{% static 'my_app/js/dashboard.js' %}"></script>
+</body>
+</html>

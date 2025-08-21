@@ -43,3 +43,11 @@ def detect_image(input_path: str, save_vis: bool = True, conf: float = 0.25, iou
         cv2.imwrite(vis_path, plotted)
 
     return boxes_out, vis_path
+
+
+
+model = YOLO(MODEL_PATH)
+
+def detect_image2(image_path):
+    results = model(image_path)
+    return results

@@ -1,42 +1,30 @@
 from django.shortcuts import render
 
-# Create your views here.
 
-# my_app/views.py
-import os
-from django.http import JsonResponse, HttpResponseBadRequest, FileResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
-from pathlib import Path
+def dashboard(request):
+    return render(request, 'my_app/dashboard.html')
+def dashboard1(request):
+    return render(request, 'my_app/dashboard.html')
+def hard_dashboard(request):
+    return render(request, 'my_app/hardDashboard.html')
 
-from .apps import AppConfig  # nếu cần
-from inference.detector import detect_image
+def live_detection(request):
+    return render(request, 'my_app/live_detection.html')
 
-@csrf_exempt
-def detect_upload(request):
-    if request.method != "POST" or "image" not in request.FILES:
-        return HttpResponseBadRequest("Use POST with form-data and field 'image'.")
+def sign_up_and_sign_in(request):
+    return render(request, 'my_app/sign_up_and_sign_in.html')
 
-    img = request.FILES["image"]
-    media_dir = Path(settings.MEDIA_ROOT) / "uploads"
-    media_dir.mkdir(parents=True, exist_ok=True)
+def map(request):
+    return render(request, 'my_app/map.html')
 
-    # Lưu ảnh tạm
-    in_path = media_dir / img.name
-    with open(in_path, "wb") as f:
-        for chunk in img.chunks():
-            f.write(chunk)
+def history(request):
+    return render(request, 'my_app/history.html')
 
-    # Chạy detect
-    boxes, vis_path = detect_image(str(in_path), save_vis=True)
+def account_management(request):
+    return render(request, 'my_app/account_management.html')
 
-    # Trả JSON + link ảnh đã vẽ bbox
-    rel_vis = None
-    if vis_path:
-        rel_vis = str(Path(vis_path).relative_to(Path(settings.MEDIA_ROOT)))
+def model_training(request):
+    return render(request, 'my_app/model_training.html')
 
-    return JsonResponse({
-        "count": len(boxes),
-        "boxes": boxes,
-        "visualization": f"{settings.MEDIA_URL}{rel_vis}" if rel_vis else None
-    })
+
+

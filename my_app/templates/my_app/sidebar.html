@@ -1,0 +1,85 @@
+{% comment %}Menu: Tổng quan, Chạy trực tiếp, Map, Lịch sử, Quản lí tài khoản, Huấn luyện{% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sidebar · Pothole AI</title>
+    <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo">AI</div>
+          <div class="title">
+            <strong>Pothole Vision</strong>
+            <span>Giám sát hạ tầng</span>
+          </div>
+        </div>
+
+        <nav class="menu" id="menu">
+          <a class="active" href="{% url 'dashboard' %}" data-route="dashboard">
+            <span aria-hidden="true">🏠</span>
+            <span>Tổng quan</span>
+            <span class="badge">Live</span>
+          </a>
+          <a href="{% url 'live_detection' %}" data-route="live">
+            <span aria-hidden="true">🎥</span>
+            <span>Chạy trực tiếp</span>
+            <span class="badge" style="background: rgba(126,234,130,.18)">Realtime</span>
+          </a>
+          <a href="{% url 'map' %}" data-route="map">
+            <span aria-hidden="true">🗺️</span>
+            <span>Map</span>
+            <span class="badge">GPS</span>
+          </a>
+          <a href="{% url 'history' %}" data-route="history">
+            <span aria-hidden="true">🕘</span>
+            <span>Lịch sử</span>
+            <span class="badge">Logs</span>
+          </a>
+          <a href="{% url 'account_management' %}" data-route="account">
+            <span aria-hidden="true">👤</span>
+            <span>Quản lí tài khoản</span>
+            <span class="badge">User</span>
+          </a>
+          <a href="{% url 'model_training' %}" data-route="train">
+            <span aria-hidden="true">🧠</span>
+            <span>Huấn luyện</span>
+            <span class="badge" style="background: rgba(253,145,253,.18)">Model</span>
+          </a>
+        </nav>
+
+        <div class="bottom">
+          <div class="toggle">
+            <span>Chế độ sáng/tối</span>
+            <button id="themeToggle" type="button">🌗</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <script>
+      // Theme persistence
+      const root = document.documentElement
+      const saved = localStorage.getItem('theme')
+      if (saved) root.setAttribute('data-theme', saved)
+      
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+        root.setAttribute('data-theme', next)
+        localStorage.setItem('theme', next)
+      })
+      
+      // Active state demo
+      document.querySelectorAll('#menu a').forEach((a) => {
+        a.addEventListener('click', (e) => {
+          document.querySelectorAll('#menu a').forEach((el) => el.classList.remove('active'))
+          a.classList.add('active')
+        })
+      })
+    </script>
+  </body>
+</html>
