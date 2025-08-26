@@ -16,20 +16,37 @@ sử dụng django, yolo11s, mysql, camera điện thoại.
 
 
 7 giao diện. 
-phần giao diện đăng kí, đăng nhập.
+phần giao diện đăng kí, 
 
-một thanh menu ở phía bên trái có các chức năng tổng quan, chạy trực tiếp, map, lịch sử, quản lí tài khoản, huấn luyện(chỉ có admin mới sử dụng được).
 
-trang dashboard có các chứ năng như hiển thị số lượng ổ gà trong ngày, số lượng camera đang hoạt động, biểu đồ thông kế số lượng ổ gà. 
 
-giao diện chạy trực tiếp hiểu thị một giao diện lớn cho người dùng quan sát trực tiếp đường đi và hiển thị thông tin trực tiếp nêu nhìn thấy ổ gà nào, có các thông tin hiểu thị bên cạnh như Số ổ gà hiện phát hiện trong frame.
-Độ chính xác (confidence).
-Kích thước (area hoặc bounding box size).
-GPS: nếu người dùng bật vị trí trên điện thoại. diện tích và độ lớn (nhỏ, vừa hoặc lớn).
-giao diện map thì hiển thị một map có các chấm xanh hiển thị ổ gà còn nhỏ  còn dấu chấm đỏ hiểu thị ổ gà lớn.  
-giao diện lịch sử hiện thị thông tin các ổ gà tìm thấy. hiển thị theo trang nếu số lượng ổ gà tìm thấy nhiều. 
+
+
+
+
 
 giao diện quản lí tài khoản hiển thị danh sách tài khoản và có hiển thị nút xóa hoặc sử nếu nhấn nút thì hiển thị một giao diện nhỏ hơn đè lên giao diễn cũ để chỉnh sửa thông tin hoặc thông báo muốn xóa tài khoản. 
 
-giao diện huấn luyện có chức năng thêm hình ảnh để huấn luyện tiếp mô hình. 
+
+
+cốt lõi:
+- ppt vs word
+- GPS: nếu người dùng bật vị trí trên điện thoại.
+- giao diện map thì hiển thị một map có các chấm xanh hiển thị ổ gà còn nhỏ còn dấu chấm đỏ hiểu thị ổ gà lớn.  
+(Châu)
+
+- một thanh menu ở phía bên trái có các chức năng tổng quan, chạy trực tiếp, map, lịch sử, quản lí tài khoản, huấn luyện(chỉ có admin mới sử dụng được).
+
+- đăng nhập.
+- giao diện chạy trực tiếp hiểu thị một giao diện lớn cho người dùng quan sát trực tiếp đường đi và hiển thị thông tin trực tiếp nêu nhìn thấy ổ gà nào, có các thông tin hiểu thị bên cạnh như Số ổ gà hiện phát hiện trong frame.
+- trang dashboard có các chứ năng như hiển thị số lượng ổ gà trong ngày, biểu đồ thông kế số lượng ổ gà theo tháng.(chung admin vs user)  
+(Bảo)
+- Tạo csdl
+- chạy trực tiếp,map, lịch sử, huấn luyện(chỉ có admin mới sử dụng được).
+- Độ chính xác (confidence).
+- Kích thước (area hoặc bounding box size).
+- giao diện lịch sử hiện thị thông tin các ổ gà tìm thấy. hiển thị theo trang nếu số lượng ổ gà tìm thấy nhiều.
+- giao diện huấn luyện có chức năng thêm hình ảnh để huấn luyện tiếp mô hình. 
+(Lan)
+
 
