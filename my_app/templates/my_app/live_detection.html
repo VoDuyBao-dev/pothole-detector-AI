@@ -103,9 +103,33 @@
 
     <!-- Main -->
     <main>
+      <!-- VIDEO UPLOAD -->
+      <div>
+        <div class="box">
+          <h3>🎞️ Upload Video</h3>
+          <form id="videoForm" enctype="multipart/form-data" method="POST" target="videoFrame">
+            <input type="file" name="video" accept="video/*" required />
+            <button type="submit">Upload & Detect</button>
+          </form>
+          <div class="container">
+            <iframe name="videoFrame" style="width:100%; height:500px; border:none;"></iframe>
+          </div>
+        </div>
+
+        <!-- IMAGE UPLOAD -->
+        <div class="box">
+          <h3>🖼️ Upload Ảnh</h3>
+          <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" />
+            <button type="submit">Submit</button>
+          </form>
+          <div id="result" class="container"></div>
+        </div>
+      </div>
       <div class="video-container">
-        <!-- Giả lập video, bạn thay bằng <video> camera stream -->
-        <img src="https://picsum.photos/900/500" alt="Camera Live" />
+        <div class="container">
+          <img src="{% url 'camera_feed' %}" alt="Live Camera" />
+        </div>
       </div>
       <div class="info-panel">
         <h3>Thông tin phát hiện</h3>
@@ -136,20 +160,25 @@
       }
       if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark')
       
-      // Fake data cập nhật trực tiếp
-      setInterval(() => {
-        const count = Math.floor(Math.random() * 5)
-        const conf = (Math.random() * 0.5 + 0.5).toFixed(2)
-        const area = Math.floor(Math.random() * 5000) + 500
-        let level = 'Nhỏ'
-        if (area > 3000) level = 'Lớn'
-        else if (area > 1500) level = 'Vừa'
+      // IMAGE DETECTION AJAX
+      const form = document.getElementById('uploadForm')
+      form.onsubmit = async (e) => {
+        e.preventDefault()
+        let formData = new FormData(form)
       
-        document.getElementById('pothole-count').innerText = count
-        document.getElementById('confidence').innerText = conf
-        document.getElementById('size').innerText = area + ' px²'
-        document.getElementById('level').innerText = level
-      }, 3000)
+        let res = await fetch("{% url 'detect_image' %}", {
+          method: 'POST',
+          body: formData
+        })
+      
+        let data = await res.json()
+        if (data.image) {
+          let img = document.createElement('img')
+          img.src = 'data:image/jpeg;base64,' + btoa(String.fromCharCode(...new Uint8Array(data.image.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))))
+          document.getElementById('result').innerHTML = ''
+          document.getElementById('result').appendChild(img)
+        }
+      }
       
       // GPS
       function getLocation() {

@@ -19,7 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True  # bật khi dev
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "..", "media")  # ../media ở gốc repo
+MEDIA_ROOT = os.path.join(BASE_DIR, "..", "/media")  # ../media ở gốc repo
+
+
 
 # STATIC_URL = "/static/"
 # MODEL_PATH = os.path.join(BASE_DIR, "models", "pothole_best.pt")
@@ -79,6 +81,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'pothole_detection.wsgi.application'
+ASGI_APPLICATION = 'pothole_detection.asgi.application'
+# Channel layer – dev dùng InMemory, production dùng Redis
+CHANNEL_LAYERS = {
+"default": {
+"BACKEND": "channels.layers.InMemoryChannelLayer",
+# Production tham khảo Redis:
+# "BACKEND": "channels_redis.core.RedisChannelLayer",
+# "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+}
+}
 
 
 # Database
@@ -91,18 +103,18 @@ DATABASES = {
     }
 }
 
-# from decouple import config
+from decouple import config
 
-# DATABASES = {
-#      'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': config('DB_NAME'),
-#         'USER': config('DB_USER'),
-#         'PASSWORD': config('DB_PASSWORD'),
-#         'HOST': config('DB_HOST'),
-#         'PORT': config('DB_PORT'),
-#     }
-# }
+DATABASES = {
+     'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
+    }
+}
 
 
 

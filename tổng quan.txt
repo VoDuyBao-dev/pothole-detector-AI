@@ -16,7 +16,7 @@ sử dụng django, yolo11s, mysql, camera điện thoại.
 
 
 7 giao diện. 
-phần giao diện đăng kí, đăng nhập.
+phần giao diện đăng nhập.
 
 một thanh menu ở phía bên trái có các chức năng tổng quan, chạy trực tiếp, map, lịch sử, quản lí tài khoản, huấn luyện(chỉ có admin mới sử dụng được).
 
@@ -33,3 +33,44 @@ giao diện quản lí tài khoản hiển thị danh sách tài khoản và có
 
 giao diện huấn luyện có chức năng thêm hình ảnh để huấn luyện tiếp mô hình. 
 
+
+
+cốt lõi:
+- ppt vs word
+- GPS: nếu người dùng bật vị trí trên điện thoại.
+- giao diện map thì hiển thị một map có các chấm xanh hiển thị ổ gà còn nhỏ còn dấu chấm đỏ hiểu thị ổ gà lớn.  
+(Châu)
+
+- một thanh menu ở phía bên trái có các chức năng tổng quan, chạy trực tiếp, map, lịch sử, quản lí tài khoản, huấn luyện(chỉ có admin mới sử dụng được).
+
+- đăng nhập.
+- giao diện chạy trực tiếp hiểu thị một giao diện lớn cho người dùng quan sát trực tiếp đường đi và hiển thị thông tin trực tiếp nêu nhìn thấy ổ gà nào, có các thông tin hiểu thị bên cạnh như Số ổ gà hiện phát hiện trong frame.
+- trang dashboard có các chứ năng như hiển thị số lượng ổ gà trong ngày, biểu đồ thông kế số lượng ổ gà theo tháng.(chung admin vs user)  
+(Bảo)
+- Tạo csdl
+- chạy trực tiếp map, lịch sử, huấn luyện(chỉ có admin mới sử dụng được).
+- Độ chính xác (confidence).
+- Kích thước (area hoặc bounding box size).
+- giao diện lịch sử hiện thị thông tin các ổ gà tìm thấy. hiển thị theo trang nếu số lượng ổ gà tìm thấy nhiều.
+- giao diện huấn luyện có chức năng thêm hình ảnh để huấn luyện tiếp mô hình. 
+(Lan)
+
+lịch sử phát hiện chia làm 2 phần một là của người dùng còn lại là của admin
+về phía người dùng thì hiển thị toàn bộ các ổ gà mà người đó đã phát hiện khi đi trên đường và lúc phát hiện có bật định vị
+còn về phía admin thì hiện thị các ổ gà ở bảng pothole (lưu thông tin của người dùng phát hiện ổ gà đó đầu tiên ) và sẽ có nút ortheruser để xem có những người dùng nào khác cùng phát hiện ra ổ gà đó. 
+và có 
+
+
+
+
+
+tạo các bảng trong cơ sở dữ liệu của dự án phát hiện ổ gà cho mình. mình sử dụng django để làm bài này. (nhớ comment chi tiết cho mình tác dụng của bảng và ý nghĩa ngắn gọn của các thuộc tính có trong bảng. nhớ comment bằng tiếng Việt nha)
+Dự án của mình có các chức năng theo các giao diện như sau:
+- giao diện map thì hiển thị một map có các chấm xanh hiển thị ổ gà còn nhỏ còn dấu chấm đỏ hiểu thị ổ gà lớn.  
+- một thanh menu ở phía bên trái có các chức năng tổng quan, chạy trực tiếp, map, lịch sử, quản lí tài khoản, huấn luyện(chỉ có admin mới sử dụng được).
+- đăng nhập. (admin cung cấp thông tin tài khoản cho người dùng gồm có tên và mật khẩu của tài khoản ) 
+- trang dashboard có các chứ năng như hiển thị số lượng ổ gà trong ngày, biểu đồ thông kế số lượng ổ gà theo tháng.  
+- giao diện chạy trực tiếp hiểu thị một giao diện lớn cho người dùng quan sát trực tiếp đường đi và hiển thị thông tin trực tiếp nêu nhìn thấy ổ gà nào, có các thông tin hiểu thị bên cạnh như Số ổ gà hiện phát hiện trong frame, hiển thị độ chính xác (confidence) ,kích thước (area hoặc bounding box size) số ổ gà, độ lớn (gồm: nhỏ và lớn). lưu thông tin ổ gà nếu người dùng bật vị trí. 
+- lịch sử ổ gà mà người dùng phát hiện (nếu không bật định vị thì không lưu thông tin ổ gà nên sẽ không hiển thị những ổ gà đã phát hiện khi di chuyển ). hiển thị theo trang nếu số lượng ổ gà tìm thấy nhiều.
+- giao diện huấn luyện có chức năng thêm hình ảnh để huấn luyện tiếp mô hình. (mình có sử dụng google colab để sử dụng yolo huấn luyện được hơn 7000 ảnh rồi và mình có tải file .pt về máy để chạy dự án.)
+- quản lí tài khoản người dùng (có thêm, xóa, sửa). 
