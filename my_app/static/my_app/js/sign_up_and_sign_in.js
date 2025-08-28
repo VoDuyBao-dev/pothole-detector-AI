@@ -110,3 +110,4 @@ setTimeout(() => {
     $('#login-email').value = 'demo@site.com'
     $('#login-password').value = 'Demo@123'
 }, 300)
+
