@@ -144,6 +144,7 @@ body {
 
 /* Thẻ form */
 .card {
+    align-content: center;
     background: var(--white);
     border-radius: calc(var(--radius) + 2px);
     box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
@@ -169,6 +170,7 @@ body {
     font-weight: 600;
     color: #0c4a6e;
     transition: 0.2s ease;
+    font-size: 20px;
 }
 
 .tab[aria-selected='true'] {
@@ -195,6 +197,7 @@ body {
 }
 
 form {
+    margin-top: 40px;
     display: grid;
     gap: 25px;
 }
@@ -276,6 +279,7 @@ form {
 .btn {
     display: inline-flex;
     gap: 10px;
+    font-size: 17px;
     align-items: center;
     justify-content: center;
     width: 100%;

@@ -43,7 +43,7 @@ body {
 }
 
 /* Sidebar (copy from sidebar.html for standalone) */
-.brand {
+/* .brand {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -112,7 +112,7 @@ body {
     border-radius: 999px;
     border: 1px solid var(--ring);
     background: var(--card);
-}
+} */
 
 /* Topbar */
 .topbar {
@@ -154,6 +154,8 @@ body {
 .main {
     display: grid;
     grid-template-rows: auto 1fr;
+    padding: 20px;
+    gap: 20px;
 }
 
 .wrap {

@@ -2,11 +2,7 @@ from django.shortcuts import render
 
 
 def dashboard(request):
-    return render(request, 'my_app/dashboard.html')
-def dashboard1(request):
-    return render(request, 'my_app/dashboard.html')
-def hard_dashboard(request):
-    return render(request, 'my_app/hardDashboard.html')
+    return render(request, 'my_app/index.html')
 
 def live_detection(request):
     return render(request, 'my_app/live_detection.html')
@@ -21,10 +17,10 @@ def history(request):
     return render(request, 'my_app/history.html')
 
 def account_management(request):
-    return render(request, 'my_app/account_management.html')
+    return render(request, 'my_app/admin/account.html')
 
 def model_training(request):
-    return render(request, 'my_app/model_training.html')
+    return render(request, 'my_app/admin/model_trainning.html')
 
 
 
