@@ -33,7 +33,8 @@ body {
     margin: 0;
     font-family: Inter, Segoe UI, Roboto, system-ui, -apple-system, Arial, sans-serif;
     color: var(--ink);
-    background: linear-gradient(180deg, rgba(110, 193, 228, 0.2), rgba(247, 197, 159, 0.15), rgba(123, 196, 127, 0.2)), #fafafa;
+    background: linear-gradient(145deg, #74bbeeff, #fd91fdff, #7eea82ff, #eef6ff);
+    
     display: grid;
     place-items: center;
     padding: 24px;
@@ -63,7 +64,7 @@ body {
 
 /* Khối giới thiệu/branding */
 .brand {
-    background: linear-gradient(145deg, #74bbeeff, #fd91fdff, #7eea82ff, #eef6ff);
+    background: linear-gradient(180deg, rgba(110, 193, 228, 0.2), rgba(247, 197, 159, 0.15), rgba(123, 196, 127, 0.2)), #fafafa;
     border-radius: calc(var(--radius) + 8px);
     padding: 36px;
     position: relative;

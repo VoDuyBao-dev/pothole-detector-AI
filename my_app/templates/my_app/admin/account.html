@@ -24,12 +24,12 @@
             <h3>Thêm tài khoản</h3>
             <form id="addForm" onsubmit="handleAddSubmit(event)">
               <div class="form-group">
-                <label for="addName">Tên</label>
+                <label for="addName">Tên đăng nhập</label>
                 <input type="text" class="form-control" id="addName" required />
               </div>
               <div class="form-group">
-                <label for="addEmail">Email</label>
-                <input type="email" class="form-control" id="addEmail" required />
+                <label for="addEmail">Mật khẩu </label>
+                <input type="password" class="form-control" id="addPassword" required />
               </div>
               <div class="modal-actions">
                 <button type="submit" class="btn btn-add">Thêm</button>
@@ -43,8 +43,8 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tên</th>
-              <th>Email</th>
+              <th>Tên đăng nhập</th>
+              <th>Mật khẩu</th>
               <th>Hành động</th>
             </tr>
           </thead>

@@ -8,7 +8,6 @@
 --dark-bg: #1e1e1e;
 --light-text: #1e1e1e;
 --dark-text: #f1f1f1;
---success: rgb(21, 73, 22);
 --border: #b0b1b6;
 }
 
@@ -81,7 +80,7 @@ font-weight: 500;
 opacity: 0.9;
 }
 .btn-add {
-background: var(--success);
+background: #067f0c;
 color: var(--dark-text);
 font-weight: bold;
 }
@@ -129,6 +128,11 @@ h3 {
     margin-top: 0;
     text-align: center;
     color: rgb(213, 79, 79);
+    font-size: 20px;
+}
+p {
+  margin: 10px 0;
+  color: #1e1e1e;
 }
 input {
   width: 100%;
