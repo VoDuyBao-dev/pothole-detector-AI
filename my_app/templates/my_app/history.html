@@ -1,92 +1,21 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lịch sử phát hiện ổ gà</title>
-    <style>
-      :root {
-        --primary: #74bbeeff;
-        --secondary: #4fb8a6ff;
-        --accent: #7ff683ff;
-        --light-bg: #eef6ff;
-        --dark-bg: #1e1e1e;
-        --light-text: #1e1e1e;
-        --dark-text: #f1f1f1;
-      }
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        display: flex;
-        background: var(--light-bg);
-        color: var(--light-text);
-        transition: 0.3s;
-      }
-      body.dark {
-        background: var(--dark-bg);
-        color: var(--dark-text);
-      }
-      .theme-toggle {
-        margin-top: 20px;
-        padding: 8px;
-        cursor: pointer;
-        border: none;
-        background: var(--secondary);
-        color: #fff;
-        border-radius: 5px;
-      }
-      main {
-        flex: 1;
-        display: flex;
-        flex-direction: row;
-        padding: 20px;
-        gap: 20px;
-      }
-      h1 {
-        color: var(--secondary);
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-      table th,
-      table td {
-        padding: 10px;
-        border: 1px solid #ccc;
-        text-align: center;
-      }
-      table th {
-        background: var(--primary);
-      }
-      body.dark table th {
-        background: var(--secondary);
-        color: white;
-      }
-      .pagination {
-        margin-top: 20px;
-        text-align: center;
-      }
-      .pagination button {
-        margin: 0 5px;
-        padding: 8px 12px;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-        background: var(--accent);
-      }
-      .pagination button.active {
-        background: var(--secondary);
-        color: white;
-      }
-    </style>
+    <link rel="stylesheet" href="{% static 'my_app/css/history.css' %}" />
+    <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
   </head>
+  
   <body data-theme="light">
     <aside class="sidebar">
-      {% include 'my_app/sidebar.html' %}
+      {% include 'my_app/menu.html' %}
     </aside>
 
     <main>
-      <h1>Lịch sử phát hiện ổ gà</h1> <br/>
+      <h1>Lịch sử phát hiện ổ gà</h1>
       <table id="historyTable">
         <thead>
           <tr>
@@ -99,10 +28,8 @@
         </thead>
         <tbody></tbody>
       </table>
-      <div class="pagination" id="pagination">
-
-      </div>
+      {% comment %} <div class="pagination" id="pagination">
+      </div> {% endcomment %}
     </main>
-
   </body>
 </html>

@@ -1,146 +1,43 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quản lý tài khoản</title>
-    {% comment %} <link rel="stylesheet" href="{% static 'css/styles.css' %}" /> {% endcomment %}
-    <style>
-      :root {
-        --primary: #3498db;
-        --secondary: #e74c3c;
-        --success: #2ecc71;
-        --background: #f5f6fa;
-        --text: #2c3e50;
-        --border: #dcdde1;
-      }
-      
-      [data-theme='dark'] {
-        --background: #2f3640;
-        --text: #f5f6fa;
-        --border: #353b48;
-      }
-      
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: flex;
-        font-family: 'Segoe UI', Arial, sans-serif;
-        background: var(--background);
-        color: var(--text);
-      }
-      
-      .sidebar {
-        width: 250px;
-        padding: 20px;
-        border-right: 1px solid var(--border);
-      }
-      
-      main {
-        flex: 1;
-        padding: 2rem;
-      }
-      
-      .table-container {
-        background: #fff3;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      
-      th,
-      td {
-        padding: 12px 15px;
-        text-align: left;
-        border-bottom: 1px solid var(--border);
-      }
-      
-      th {
-        background-color: var(--primary);
-        color: white;
-      }
-      
-      tr:hover {
-        background-color: rgba(0, 0, 0, 0.02);
-      }
-      
-      .btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: opacity 0.2s;
-        font-weight: 500;
-      }
-      
-      .btn:hover {
-        opacity: 0.9;
-      }
-      
-      .btn-edit {
-        background: var(--primary);
-        color: white;
-      }
-      
-      .btn-delete {
-        background: var(--secondary);
-        color: white;
-      }
-      
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(3px);
-      }
-      
-      .modal-content {
-        background: var(--background);
-        padding: 25px;
-        border-radius: 12px;
-        width: 400px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      
-      .form-group {
-        margin-bottom: 15px;
-      }
-      
-      .form-control {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        background: var(--background);
-        color: var(--text);
-      }
-      
-      .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
-      }
-    </style>
-  </head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Quản lý tài khoản</title>
+    <link rel="stylesheet" href="{% static 'my_app/css/admin/account_management.css' %}" />
+    <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />  
+</head>
   <body data-theme="light">
     <aside class="sidebar">
-      {% include 'my_app/sidebar.html' %}
+      {% include 'my_app/menu.html' %}
     </aside>
 
     <main>
-      <h2>Quản lý tài khoản</h2>
+      <h1>Quản lý tài khoản</h1>
+      <div class="add">
+        <button class="btn btn-add" onclick="openAddModal()"> ➕ Thêm tài khoản</button>
+        </div>
+        <!-- Modal add -->
+        <div class="modal" id="addModal">
+          <div class="modal-content">
+            <h3>Thêm tài khoản</h3>
+            <form id="addForm" onsubmit="handleAddSubmit(event)">
+              <div class="form-group">
+                <label for="addName">Tên</label>
+                <input type="text" class="form-control" id="addName" required />
+              </div>
+              <div class="form-group">
+                <label for="addEmail">Email</label>
+                <input type="email" class="form-control" id="addEmail" required />
+              </div>
+              <div class="modal-actions">
+                <button type="submit" class="btn btn-add">Thêm</button>
+                <button type="button" class="btn" onclick="closeModal()">Hủy</button>
+              </div>
+            </form>
+          </div>
+        </div>
       <div class="table-container">
         <table>
           <thead>
@@ -151,7 +48,7 @@
               <th>Hành động</th>
             </tr>
           </thead>
-          <tbody>
+          {% comment %} <tbody>
             {% for user in users %}
               <tr>
                 <td>{{ user.id }}</td>
@@ -163,7 +60,21 @@
                 </td>
               </tr>
             {% endfor %}
+          </tbody> {% endcomment %}
+
+          <tbody>
+              <tr>
+                <td>A123</td>
+                <td>Alice</td>
+                <td>alice@example.com</td>
+                <td>
+                  <button class="btn btn-edit" onclick="openEditModal('A123', 'Alice', 'alice@example.com')">Sửa</button>
+                  <button class="btn btn-delete" onclick="openDeleteModal('A123')">Xóa</button>
+                </td>
+              </tr>
           </tbody>
+
+         
         </table>
       </div>
 
@@ -205,6 +116,11 @@
     <script>
       let currentUserId = null
       
+      function openAddModal() {
+        document.getElementById('addForm').reset()
+        document.getElementById('addModal').style.display = 'flex'
+      }
+
       function openEditModal(id, name, email) {
         currentUserId = id
         document.getElementById('editId').value = id
@@ -269,6 +185,36 @@
             location.reload()
           } else {
             alert('Có lỗi xảy ra khi xóa!')
+          }
+        } catch (error) {
+          console.error('Error:', error)
+          alert('Có lỗi xảy ra!')
+        }
+      
+        closeModal()
+      }
+
+      async function handleAddSubmit(event) {
+        event.preventDefault()
+        const formData = {
+          name: document.getElementById('addName').value,
+          email: document.getElementById('addEmail').value
+        }
+      
+        try {
+          const response = await fetch('/api/users', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(formData)
+          })
+      
+          if (response.ok) {
+            location.reload()
+          } else {
+            alert('Có lỗi xảy ra khi thêm!')
           }
         } catch (error) {
           console.error('Error:', error)
