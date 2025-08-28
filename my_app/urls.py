@@ -7,7 +7,8 @@ from .views import *
 
 
 urlpatterns = [
-    path('sign_up_and_sign_in/', views.sign_up_and_sign_in, name='sign_up_and_sign_in'),
+    path('signin/', views.signin, name='signin'),
+    path('signout/', views.signout, name='signout'),
     
     # users
     path('', views.dashboard, name= 'dashboard'),
@@ -19,5 +20,9 @@ urlpatterns = [
     # admin
     path('account_management/', views.account_management, name='account_management'),
     path('model_training/', views.model_training, name='model_training'),
+    # Thêm tài khoản của admin
+    path('register/', register_view, name='register'),
+    
+
 
 ]
