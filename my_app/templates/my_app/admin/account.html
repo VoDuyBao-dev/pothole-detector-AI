@@ -29,8 +29,8 @@
         <form method="post" action="{% url 'register' %}">
           {% csrf_token %}
           <div class="form-group">
-            <label for="addEmail">Email</label>
-            <input type="email" class="form-control" id="addEmail" name="email" required />
+            <label for="addEmail">Tên đăng nhập</label>
+            <input type="text" class="form-control" id="addEmail" name="username" required />
           </div>
           <div class="form-group">
             <label for="password">Password</label>
@@ -49,8 +49,8 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Tên</th>
-            <th>Email</th>
+            <th>Tên đăng nhập</th>
+            <th>Password</th>
             <th>Hành động</th>
           </tr>
         </thead>
@@ -76,12 +76,13 @@
           {% csrf_token %}
           <input type="hidden" id="editId" name="id"/>
           <div class="form-group">
-            <label for="editName">Tên</label>
+            <label for="editName">Tên đăng nhập</label>
             <input type="text" class="form-control" id="editName" name="name" required />
           </div>
           <div class="form-group">
-            <label for="editEmail">Email</label>
-            <input type="email" class="form-control" id="editEmail" name="email" required />
+            <label for="editPassword">Password</label>
+            <input type="password" class="form-control" id="editPassword" name="password" required />
+            <button class="icon" type="button" aria-label="Hiện/ẩn mật khẩu" data-toggle="password" data-target="#editPassword">👁️</button>
           </div>
           <div class="modal-actions">
             <button type="submit" class="btn btn-edit">Lưu</button>
@@ -116,7 +117,7 @@
     function openEditModal(id, name, email) {
       document.getElementById('editId').value = id
       document.getElementById('editName').value = name
-      document.getElementById('editEmail').value = email
+      document.getElementById('editPassword').value = password
       document.getElementById('editModal').style.display = 'flex'
     }
     
@@ -130,6 +131,19 @@
         modal.style.display = 'none'
       })
     }
+    const $ = (sel, ctx = document) => ctx.querySelector(sel)
+    const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel))
+
+
+    $$('[data-toggle="password"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const target = $(btn.dataset.target)
+        if (!target) return
+        const isPwd = target.getAttribute('type') === 'password'
+        target.setAttribute('type', isPwd ? 'text' : 'password')
+        btn.textContent = isPwd ? '🙈' : '👁️'
+    })
+})
   </script>
 </body>
 </html>

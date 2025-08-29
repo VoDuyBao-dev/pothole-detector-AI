@@ -92,7 +92,6 @@ WSGI_APPLICATION = 'pothole_detection.wsgi.application'
 # }
 
 from decouple import config
-
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -100,7 +99,7 @@ DATABASES = {
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+        'PORT': config('DB_PORT', cast=int),
     }
 }
 
