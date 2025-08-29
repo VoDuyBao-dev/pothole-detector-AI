@@ -27,8 +27,8 @@ urlpatterns = [
 ]
 
 # Serve media khi chạy dev server
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Gửi ảnh vào để thử
 # curl -X POST -F "image=@/path/to/your/test.jpg" http://127.0.0.1:8000/api/detect/

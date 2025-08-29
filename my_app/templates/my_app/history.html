@@ -8,28 +8,193 @@
     <link rel="stylesheet" href="{% static 'my_app/css/history.css' %}" />
     <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
   </head>
-  
   <body data-theme="light">
     <aside class="sidebar">
       {% include 'my_app/menu.html' %}
     </aside>
 
     <main>
-      <h1>Lịch sử phát hiện ổ gà</h1>
-      <table id="historyTable">
-        <thead>
-          <tr>
-            <th>Thời gian</th>
-            <th>Vị trí (GPS)</th>
-            <th>Độ lớn</th>
-            <th>Diện tích</th>
-            <th>Độ chính xác</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      {% comment %} <div class="pagination" id="pagination">
-      </div> {% endcomment %}
+      <h1>Lịch sử phát hiện ổ gà</h1> <br />
+
+      {% if is_admin %}
+        <!-- Admin: hiển thị bảng Pothole -->
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tọa độ</th>
+              <th>Người phát hiện đầu tiên</th>
+              <th>Số người phát hiện</th>
+              <th>Độ tin cậy trung bình</th>
+              <th>Trạng thái</th>
+              <th>Danh sách người phát hiện</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pothole in potholes %}
+              <tr>
+                <td>{{ pothole.id }}</td>
+                <td>
+                  <a href="{% url 'map' %}?pothole_id={{ pothole.pothole.id }}">Xem trên bản đồ</a>
+                </td>
+                <td>{{ pothole.first_detected_by.username }}</td>
+                <td>{{ pothole.detections_count }}</td>
+                <td>{{ pothole.confidence_avg|floatformat:2 }}%</td>
+                <td>
+                  {% if pothole.status == 'active' %}
+                    <span class="badge bg-danger">Chưa sửa</span>
+                  {% else %}
+                    <span class="badge bg-success">Đã sửa</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <button class="show-detections-btn" data-url="{% url 'pothole_detail' pothole.id %}" data-id="{{ pothole.id }}">Xem danh sách</button>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7">Chưa có dữ liệu</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ảnh</th>
+              <th>Tọa độ</th>
+              <th>Diện tích</th>
+              <th>Kích thước</th>
+              <th>Độ lớn</th>
+              <th>Độ tin cậy</th>
+              <th>Độ tin cậy TB</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in potholes %}
+              <tr>
+                <td>{{ d.id }}</td>
+                <td>
+                  {% with imgs=d.images.all %}
+                    {% if imgs|length %}
+                      {% for img in imgs|slice:':1' %}
+                        <img src="{{ img.image.url }}" alt="pothole" style="width:80px;height:60px;object-fit:cover;border-radius:8px;" />
+                      {% endfor %}
+                    {% else %}
+                      <span class="text-muted">Không có ảnh</span>
+                    {% endif %}
+                  {% endwith %}
+                </td>
+                <td>
+                  <a href="{% url 'map' %}?pothole_id={{ d.pothole.id }}">Xem trên bản đồ</a>
+                </td>
+                <td>{{ d.area }}</td>
+                <td>{{ d.size }}</td>
+                <td>{{ d.level }}</td>
+                <td>{{ d.confidence|floatformat:2 }}%</td>
+                <td>
+                  {% if d.pothole %}
+                    {{ d.pothole.confidence_avg|floatformat:2 }}%
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td>{{ d.detected_at|date:'d/m/Y H:i' }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="9">Bạn chưa phát hiện ổ gà nào</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
     </main>
+
+    <!-- Modal hiển thị danh sách phát hiện -->
+    <div class="modal-overlay" id="detectionsModal" style="display:none;">
+      <div class="modal-content">
+        <h5 class="modal-title">Danh sách người phát hiện ổ gà</h5>
+        <span class="close" onclick="document.getElementById('detectionsModal').style.display = 'none';">&times;</span>
+        <table id="detectionsList">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ảnh</th>
+              <th>Tọa độ</th>
+              <th>Diện tích</th>
+              <th>Kích thước</th>
+              <th>Độ lớn</th>
+              <th>Độ tin cậy</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody id="order-details-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <script>
+      const baseURL = "http://127.0.0.1:8000"; 
+      document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('detectionsModal')
+        const tbody = document.getElementById('order-details-table-body')
+
+        // Gắn sự kiện click vào tất cả button "Xem danh sách"
+        document.querySelectorAll(".show-detections-btn").forEach(button => {
+          button.addEventListener('click', function () {
+            const potholeId = this.getAttribute("data-id")
+            const url = this.getAttribute("data-url")   // ✅ lấy URL từ data-url
+            console.log("Pothole ID:", potholeId)
+            console.log("Fetch URL:", url)
+
+            fetch(`${baseURL}${url}`, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+              .then(response => response.json())
+              .then(data => {
+                if (!data || data.length === 0) {
+                  tbody.innerHTML = `<tr><td colspan="8">Không có dữ liệu phát hiện</td></tr>`
+                  return
+                }
+                console.log("helllo")
+                tbody.innerHTML = "" // xóa dữ liệu cũ
+                data.forEach(det => {
+                  const tr = document.createElement("tr")
+                  tr.innerHTML = `
+                    <td>${det.pothole_id}</td>
+                    <td><img src="${det.image_url}" alt="ảnh ổ gà" width="80"></td>
+                    <td>${det.latitude}, ${det.longitude}</td>
+                    <td>${det.area ?? '-'}</td>
+                    <td>${det.size ?? '-'}</td>
+                    <td>${det.level ?? '-'}</td>
+                    <td>${(det.confidence * 100).toFixed(1)}%</td>
+                    <td>${det.created_at}</td>
+                  `
+                  tbody.appendChild(tr)
+                })
+
+                // mở modal
+                modal.style.display = "flex"
+              })
+              .catch(error => {
+                console.error("Lỗi khi lấy dữ liệu phát hiện:", error)
+                tbody.innerHTML = `<tr><td colspan="8">Lỗi tải dữ liệu</td></tr>`
+              })
+          })
+        })
+
+        // Đóng modal khi click ra ngoài
+        window.addEventListener('click', function (event) {
+          if (event.target === modal) {
+            modal.style.display = 'none'
+          }
+        })
+      })
+    </script>
+
   </body>
 </html>
+

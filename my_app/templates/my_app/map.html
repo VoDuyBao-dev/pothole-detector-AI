@@ -20,47 +20,27 @@
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
     <script>
-      // Tạo bản đồ Leaflet
-      const map = L.map('map').setView([21.0278, 105.8342], 13) // Hà Nội demo
-      
-      // Load nền bản đồ từ OpenStreetMap
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map)
-      
-      // Dữ liệu demo ổ gà
-      const potholes = [
-        { lat: 21.028, lng: 105.835, size: 'small' },
-        { lat: 21.025, lng: 105.83, size: 'large' },
-        { lat: 21.03, lng: 105.84, size: 'small' },
-        { lat: 21.027, lng: 105.837, size: 'large' }
-      ]
-      
-      // Vẽ marker
-      potholes.forEach((p) => {
-        const color = p.size === 'small' ? 'green' : 'red'
-        L.circleMarker([p.lat, p.lng], {
-          radius: 8,
-          color: color,
-          fillColor: color,
-          fillOpacity: 0.8
-        })
-          .bindPopup(`<b>Ổ gà ${p.size === 'small' ? 'nhỏ' : 'lớn'}</b><br>GPS: ${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}`)
-          .addTo(map)
-      })
-      
-      // Thêm chú giải
-      const legend = L.control({ position: 'bottomright' })
-      legend.onAdd = function () {
-        const div = L.DomUtil.create('div', 'legend')
-        div.innerHTML = `
-              <div><span class="dot-small"></span>Ổ gà nhỏ</div>
-              <div><span class="dot-large"></span>Ổ gà lớn</div>
-            `
-        return div
-      }
-      legend.addTo(map)
-    </script>
+    var map = L.map('map').setView([10.762622, 106.660172], 13); // vị trí mặc định (TP.HCM)
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    {% for pothole in potholes %}
+        var marker = L.circleMarker([{{ pothole.latitude }}, {{ pothole.longitude }}], {
+            color: {% if pothole.id == highlighted.id %} 'blue' {% elif pothole.detections_count > 3 %} 'red' {% else %} 'green' {% endif %},
+            radius: {% if pothole.id == highlighted.id %} 10 {% elif pothole.confidence_avg > 0.7 %} 8 {% else %} 5 {% endif %}
+        }).addTo(map);
+
+        marker.bindPopup("Ổ gà ID: {{ pothole.id }}<br>Phát hiện: {{ pothole.detections_count }} lần <br> Độ tin cậy TB: {{ pothole.confidence_avg|floatformat:2 }}%");
+    {% endfor %}
+
+    {% if highlighted %}
+        map.setView([{{ highlighted.latitude }}, {{ highlighted.longitude }}], 16);
+    {% endif %}
+</script>
   </body>
 </html>
