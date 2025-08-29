@@ -1,24 +1,6 @@
 const $ = (sel, ctx = document) => ctx.querySelector(sel)
 const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel))
 
-// Tab switch
-const tabLogin = $('#tab-login')
-const tabSignup = $('#tab-signup')
-const panelLogin = $('#panel-login')
-const panelSignup = $('#panel-signup')
-function setTab(which) {
-    const isLogin = which === 'login'
-    tabLogin.setAttribute('aria-selected', isLogin)
-    tabSignup.setAttribute('aria-selected', !isLogin)
-    panelLogin.hidden = !isLogin
-    panelSignup.hidden = isLogin
-}
-tabLogin.addEventListener('click', () => setTab('login'))
-tabSignup.addEventListener('click', () => setTab('signup'))
-$('#to-login')?.addEventListener('click', (e) => {
-    e.preventDefault()
-    setTab('login')
-})
 
 // Toggle password visibility
 $$('[data-toggle="password"]').forEach((btn) => {

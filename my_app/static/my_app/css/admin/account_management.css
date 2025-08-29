@@ -80,7 +80,7 @@ font-weight: 500;
 opacity: 0.9;
 }
 .btn-add {
-background: #067f0c;
+background: #088106;
 color: var(--dark-text);
 font-weight: bold;
 }
@@ -117,7 +117,21 @@ box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
 .form-group {
 margin-bottom: 15px;
-
+position: relative;
+}
+.icon {
+    position: absolute;
+    right: 10px;
+    top: 64%;
+    transform: translateY(-50%);
+    width: 35px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    color: #5183caff;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s ease;
 }
 label {
   font-weight: bold;
@@ -157,3 +171,46 @@ justify-content: flex-end;
 gap: 10px;
 margin-top: 20px;
 }
+
+
+.msg {
+  padding: 8px 12px;
+  margin: 3px 0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  animation: fadeIn 0.4s ease;
+  width: 40%;
+  animation: fadeIn 0.5s ease, fadeOut 0.5s ease 5s forwards;
+}
+
+/* Thông báo lỗi */
+.msg.error {
+  background-color: #fdecea;
+  border: 1px solid #f5c2c0;
+  color: #b71c1c;
+}
+
+/* Thông báo thành công */
+.msg.success {
+  background-color: #7ebd92;
+  border: 1px solid #b7e1c0;
+  color: #1b5e20;
+}
+
+/* Animation nhỏ khi hiện lên */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-5px); }
+}
+
+

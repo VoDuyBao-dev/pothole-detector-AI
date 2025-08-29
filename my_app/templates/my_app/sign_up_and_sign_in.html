@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Đăng nhập</title>
     <link rel="stylesheet" href="{% static 'my_app/css/sign_up_and_sign_in.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
     <div class="shell">
@@ -13,7 +14,7 @@
         <div class="logo">
           <div class="logo-badge">PD</div>Pothole Detection
         </div>
-        <p>Pothole Detection là một hệ thống thông minh hỗ trợ phát hiện và quản lý tình trạng ổ gà trên đường. Thông qua camera và trí tuệ nhân tạo, hệ thống có thể xác định nhanh chóng vị trí ổ gà, giúp đơn vị quản lý hạ tầng nắm bắt được tình hình thực tế và đưa ra các biện pháp xử lí còn người dân có thể tìm được tuyến đường an toàn hơn.</p>
+        <p>Pothole Detection là hệ thống thông minh sử dụng camera và AI để phát hiện, xác định vị trí ổ gà, giúp cơ quan quản lý xử lý kịp thời và hỗ trợ người dân chọn lộ trình an toàn hơn.</p>
         <div class="features">
           <p>Đây là công cụ hữu ích cho:</p> <br />
           <div class="feat">
@@ -25,7 +26,7 @@
         </div>
       </aside>
       <main class="card" role="region" aria-label="Khu vực biểu mẫu xác thực">
-          <div class="tab" role="tab" id="tab-login" aria-controls="panel-login" aria-selected="true">Đăng nhập</div>
+          {% comment %} <div class="tab" role="tab" id="tab-login" aria-controls="panel-login" aria-selected="true">Đăng nhập</div> {% endcomment %}
 
 
         <!-- Panel Đăng nhập -->
@@ -42,8 +43,8 @@
     {% endif %}
 
     <div class="control">
-      <input id="login-email" type="email" name="email" placeholder=" " autocomplete="email" required />
-      <label for="login-email">Email</label>
+      <input id="login-email" type="email" name="email" placeholder=" " autocomplete="Tên đăng nhập" required />
+      <label for="login-email">Tên đăng nhập</label>
     </div>
 
     <div class="control">
