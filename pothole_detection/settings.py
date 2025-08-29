@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True  # bật khi dev
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "..", "/media")  # ../media ở gốc repo
+MEDIA_ROOT = os.path.join(BASE_DIR, "/media")  # ../media ở gốc repo
 
 
 
@@ -84,24 +84,24 @@ WSGI_APPLICATION = 'pothole_detection.wsgi.application'
 ASGI_APPLICATION = 'pothole_detection.asgi.application'
 # Channel layer – dev dùng InMemory, production dùng Redis
 CHANNEL_LAYERS = {
-"default": {
-"BACKEND": "channels.layers.InMemoryChannelLayer",
-# Production tham khảo Redis:
-# "BACKEND": "channels_redis.core.RedisChannelLayer",
-# "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
-}
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        # Production tham khảo Redis:
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+        }
 }
 
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 from decouple import config
 
@@ -158,3 +158,58 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+import os
+import logging
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
+
+class OnlyDebugFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno == logging.DEBUG
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+
+    'filters': {
+        'only_debug': {
+            '()': 'pothole_detection.settings.OnlyDebugFilter',
+        },
+    },
+
+    'handlers': {
+        'debug_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'debug.log'),
+            'formatter': 'verbose',
+            'filters': ['only_debug'],
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'error.log'),
+            'formatter': 'verbose',
+        },
+    },
+
+    'loggers': {
+        'my_app': {
+            'handlers': ['debug_file', 'error_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

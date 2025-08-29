@@ -86,8 +86,80 @@
     </aside>
 
     <main>
-      <h1>Lịch sử phát hiện ổ gà</h1> <br/>
-      <table id="historyTable">
+      <h1>Lịch sử phát hiện ổ gà</h1> <br />
+      {% comment %} {% if is_admin %} {% endif %} {% endcomment %}
+      {% if 1 %}
+        <table class="table table-bordered" id="historyTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tọa độ</th>
+              <th>Người phát hiện đầu tiên</th>
+              <th>Số lần phát hiện</th>
+              <th>Trạng thái</th>
+              <th>Danh sách người phát hiện</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pothole in potholes %}
+              <tr>
+                <td>{{ pothole.id }}</td>
+                <td>
+                  <a href="{% url 'map' %}?pothole_id={{ d.pothole.id }}">Xem trên bản đồ</a>
+                </td>
+                <td>{{ pothole.first_detected_by.username }}</td>
+                <td>{{ pothole.detections_count }}</td>
+                <td>
+                  {% if pothole.status == 'active' %}
+                    <span class="badge bg-danger">Chưa sửa</span>
+                  {% else %}
+                    <span class="badge bg-success">Đã sửa</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detectionsModal" data-id="{{ pothole.id }}">┗|｀O′|┛</button>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7">Chưa có dữ liệu</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tọa độ</th>
+              <th>Diện tích</th>
+              <th>Kích thước</th>
+              <th>Độ tin cậy</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pothole in potholes %}
+              <tr>
+                <td>{{ pothole.id }}</td>
+                <td>
+                  <a href="{% url 'map' %}?pothole_id={{ pothole.pothole.id }}">Xem trên bản đồ</a>
+                </td>
+                <td>{{ pothole.area }}</td>
+                <td>{{ pothole.size }}</td>
+                <td>{{ pothole.confidence|floatformat:2 }}%</td>
+                <td>{{ pothole.detected_at|date:'d/m/Y H:i' }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6">Bạn chưa phát hiện ổ gà nào</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+      {% comment %} <table id="historyTable">
         <thead>
           <tr>
             <th>Thời gian</th>
@@ -99,10 +171,7 @@
         </thead>
         <tbody></tbody>
       </table>
-      <div class="pagination" id="pagination">
-
-      </div>
+      <div class="pagination" id="pagination"></div> {% endcomment %}
     </main>
-
   </body>
 </html>

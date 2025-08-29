@@ -39,9 +39,10 @@ class PotholeDetection(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     latitude = models.FloatField()
     longitude = models.FloatField()
-    size = models.CharField(max_length=10, choices=[('small', 'Nhỏ'), ('large', 'Lớn')])
+    size = models.FloatField()          # chiều dài x chiều rộng của ổ gà 
+    level = models.CharField(max_length=10, choices=[('small', 'Nhỏ'), ('large', 'Lớn')])
     confidence = models.FloatField()
-    area = models.FloatField(null=True, blank=True)
+    area = models.FloatField(null=True, blank=True)       # diện tích của ổ gà 
     detected_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

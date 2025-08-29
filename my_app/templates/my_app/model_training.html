@@ -151,26 +151,28 @@
     </aside>
 
     <main>
-      <h2>Huấn luyện mô hình</h2>
+      <h2>Upload Dataset Folder</h2>
 
-      <div class="upload-container">
-        <div class="upload-box" id="dropZone">
-          <p>Kéo thả hoặc nhấn để chọn hình ảnh</p>
-          <input type="file" id="fileInput" multiple accept="image/*" hidden />
-        </div>
-        <div class="preview" id="preview"></div>
-      </div>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="images" webkitdirectory directory multiple />
+        <button type="submit">Tải các file ảnh lên đây</button>
+      </form>
 
-      <div class="controls">
-        <button class="train-btn" id="trainBtn" onclick="startTraining()" disabled>Bắt đầu huấn luyện</button>
-      </div>
+      {% if uploaded_files %}
+        <h3>Uploaded Files:</h3>
+        <ul>
+          {% for f in uploaded_files %}
+            <li>{{ f }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
 
-      <div class="progress-container">
-        <div class="progress">
-          <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div class="status" id="status"></div>
-      </div>
+      {% if code_snippet %}
+        <h3>Colab Code:</h3>
+        <textarea rows="10" cols="80" readonly>{{ code_snippet }}</textarea>
+        <p>👉 Copy đoạn code này vào Google Colab để tải dataset từ Roboflow.</p>
+      {% endif %}
     </main>
   </body>
 </html>
