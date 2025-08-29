@@ -20,6 +20,8 @@ urlpatterns = [
 
     path('map/', views.map, name='map'),
     path('history/', views.history, name='history'),
+    path('pothole_detail/<int:pothole_id>/', views.pothole_detail, name='pothole_detail'),
+
 
     # admin
     path('account_management/', views.account_management, name='account_management'),

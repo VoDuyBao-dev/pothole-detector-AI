@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 import cv2, base64, json, os
 # import torch
 from ultralytics import YOLO
@@ -71,35 +71,82 @@ def signin(request):
         
     return render(request, 'my_app/sign_up_and_sign_in.html')
 
-# @login_required
-# def history(request):
-#     user = request.user
 
-#     if user.role == "admin":
-#         # Admin xem toàn bộ ổ gà
-#         potholes = Pothole.objects.all().order_by("-first_detected_at")
-#     else:
-#         # User chỉ xem những phát hiện của mình
-#         potholes = PotholeDetection.objects.filter(user=user).select_related("pothole").order_by("-detected_at")
-
-#     return render(request, "my_app/history.html", {"potholes": potholes})
 def signout(request):
     logout(request)
     return redirect('signin')
 
 
-def history(request):
-    potholes = PotholeDetection.objects.select_related("pothole", "user").all()
-    return render(request, "my_app/history.html", {"potholes": potholes})
+
+def _is_admin(user):
+    try:
+        return user.profile.role == "admin"
+    except UserProfile.DoesNotExist:
+        return False
+
 
 @login_required
-def pothole_detail(request, pothole_id):
-    """Admin bấm 'xem chi tiết' thì vào đây để xem toàn bộ detection của ổ gà"""
-    pothole = get_object_or_404(Pothole, id=pothole_id)
-    detections = pothole.detections.select_related("user").all().order_by("-detected_at")
+def history(request):
+    """
+    - Admin: danh sách Pothole (tổng quan).
+    - User: danh sách PotholeDetection của chính mình, kèm ảnh và avg confidence của ổ gà.
+    """
+    if _is_admin(request.user):
+        potholes = (
+            Pothole.objects
+            .select_related("first_detected_by")
+            .order_by("id")  # Sắp xếp tăng dần theo id
+        )
+        # Lấy thông tin detection của từng pothole
+        # detections = (
+        #     PotholeDetection.objects
+        #     .select_related("user", "pothole")
+        #     .values('latitude', 'longitude')
+        #     .order_by("-detected_at")
+        # )
+        return render(request, "my_app/history.html", {
+            "is_admin": True,
+            "potholes": potholes,
+            # "detections": detections    
+        })
+    else:
+        detections = (
+            PotholeDetection.objects
+            .filter(user=request.user)
+            .select_related("pothole")            # để lấy pothole.confidence_avg
+            .prefetch_related("images")           # để hiển thị ảnh nhanh
+            .order_by("detected_at")
+        )
+        return render(request, "my_app/history.html", {
+            "is_admin": False,
+            "potholes": detections,               # template đang dùng biến 'potholes'
+        })
 
-    context = {"pothole": pothole, "detections": detections}
-    return render(request, "my_app/pothole_detail.html", context)
+
+@login_required
+@user_passes_test(_is_admin)   # chặn user thường
+def pothole_detail(request, pothole_id):
+    pothole = get_object_or_404(Pothole, id=pothole_id)
+    detections = PotholeDetection.objects.filter(pothole=pothole)
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        data = []
+        for d in detections:
+            img_url = d.images.first().image.url if d.images.exists() else ""
+            data.append({
+                "pothole_id": d.pothole.id,
+                "image_url": img_url,
+                "latitude": d.latitude,
+                "longitude": d.longitude,
+                "area": d.area,
+                "size": d.size,
+                "level": d.level,
+                "confidence": float(d.confidence),
+                "created_at": d.detected_at.strftime("%d/%m/%Y %H:%M"),
+            })
+        return JsonResponse(data, safe=False)
+
+    # fallback render page
+    return render(request, "my_app/history.html", {"pothole": pothole})
 
 def map(request):
     pothole_id = request.GET.get("pothole_id")
@@ -152,8 +199,9 @@ def haversine(lat1, lon1, lat2, lon2):
     return distance
 
 # Tìm ổ gà gần đó, nếu chưa có thì tạo mới 
+@login_required
 def get_or_create_pothole(request, user, lat, lon, confidence, size, area, level):
-    threshold = 5  # mét, bán kính gom cụm
+    threshold = 3  # mét, bán kính gom cụm
     nearby = None
 
     # 🔹 Lọc trong phạm vi nhỏ quanh GPS trước rồi mới tính haversine(khoảng cách giữa 2 tọa độ) (tăng hiệu năng)
@@ -178,7 +226,7 @@ def get_or_create_pothole(request, user, lat, lon, confidence, size, area, level
         nearby = Pothole.objects.create(
             latitude=lat,
             longitude=lon,
-            first_detected_by=user if user.is_authenticated else None,
+            first_detected_by=user,
             confidence_avg=confidence,
             detections_count=1
         )
@@ -187,7 +235,7 @@ def get_or_create_pothole(request, user, lat, lon, confidence, size, area, level
     # Luôn lưu detection mới
     tmp = PotholeDetection.objects.create(
         pothole=nearby,
-        user=user if user.is_authenticated else None,
+        user=user,
         latitude=lat,
         longitude=lon,
         size=size,
@@ -204,6 +252,7 @@ def live_detection_page(request):
 
 
 @csrf_exempt
+@login_required
 def live_detection(request):
     """
     Nhận POST multipart/form-data:
@@ -254,8 +303,8 @@ def live_detection(request):
             return JsonResponse({"error": "Invalid image"}, status=400)
 
         # Run model (tùy bạn điều chỉnh imgsz/conf để trade speed/accuracy)
-        results = model(frame, imgsz=640, conf=0.25)  # nếu model hỗ trợ tham số
-        # results = model(frame)  # dùng mặc định
+        # results = model(frame, imgsz=640, conf=0.25)  # nếu model hỗ trợ tham số
+        results = model(frame)  # dùng mặc định
 
         detections = []
         # results có dạng list, lấy results[0]
@@ -282,10 +331,11 @@ def live_detection(request):
                 "label": label,
                 "area": area,
                 "size": size
+
             }
             detections.append(det)
 
-            # Nếu có GPS thì lưu (gọi hàm bạn đã có)
+            # Nếu có GPS thì lưu
             if gps:
                 # get_or_create_pothole(request, user, lat, lon, confidence, size, area)
                 try:

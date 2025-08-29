@@ -19,8 +19,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True  # bật khi dev
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "/media")  # ../media ở gốc repo
+MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 
+# nếu để dòng @login_required ở trên một hàm thì nó sẽ kiểm tra xem người dùng đã đăng nhập chư nếu chưa thì chuyển sang trang đăng nhập
+LOGIN_URL = '/signin/'       # đường dẫn URL tới trang đăng nhập
 
 
 # STATIC_URL = "/static/"
