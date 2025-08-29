@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý tài khoản</title>
+  <link rel="stylesheet" href="{% static 'my_app/css/admin/account_management.css' %}" />
+  <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />  
+</head>
+<body data-theme="light">
+  <aside class="sidebar">
+    {% include 'my_app/menu.html' %}
+  </aside>
+
+  <main>
+    <h1>Quản lý tài khoản</h1>
+    {% if error %}<div class="msg error">{{ error }}</div>{% endif %}
+        {% if success %}<div class="msg success">{{ success }}</div>{% endif %}
+
+    <div class="add">
+      <button class="btn btn-add" onclick="openAddModal()"> ➕ Thêm tài khoản</button>
+    </div>
+
+    <!-- Modal add -->
+    <div class="modal" id="addModal">
+      <div class="modal-content">
+        <h3>Thêm tài khoản</h3>
+        <form method="post" action="{% url 'register' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="addEmail">Tên đăng nhập</label>
+            <input type="text" class="form-control" id="addEmail" name="username" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required />
+          </div>
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-add">Thêm</button>
+            <button type="button" class="btn" onclick="closeModal()">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tên đăng nhập</th>
+            <th>Password</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A123</td>
+            <td>Alice</td>
+            <td>alice@example.com</td>
+            <td>
+              <button class="btn btn-edit" onclick="openEditModal('A123', 'Alice', 'alice@example.com')">Sửa</button>
+              <button class="btn btn-delete" onclick="openDeleteModal('A123')">Xóa</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal Edit -->
+    <div class="modal" id="editModal">
+      <div class="modal-content">
+        <h3>Sửa tài khoản</h3>
+        <form method="post" action="#">
+          {% csrf_token %}
+          <input type="hidden" id="editId" name="id"/>
+          <div class="form-group">
+            <label for="editName">Tên đăng nhập</label>
+            <input type="text" class="form-control" id="editName" name="name" required />
+          </div>
+          <div class="form-group">
+            <label for="editPassword">Password</label>
+            <input type="password" class="form-control" id="editPassword" name="password" required />
+            <button class="icon" type="button" aria-label="Hiện/ẩn mật khẩu" data-toggle="password" data-target="#editPassword">👁️</button>
+          </div>
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-edit">Lưu</button>
+            <button type="button" class="btn" onclick="closeModal()">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Delete -->
+    <div class="modal" id="deleteModal">
+      <div class="modal-content">
+        <h3>Xác nhận xóa</h3>
+        <p>Bạn có chắc chắn muốn xóa tài khoản này?</p>
+        <form method="post" action="#">
+          {% csrf_token %}
+          <input type="hidden" id="deleteId" name="id"/>
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-delete">Xóa</button>
+            <button type="button" class="btn" onclick="closeModal()">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function openAddModal() {
+      document.getElementById('addModal').style.display = 'flex'
+    }
+
+    function openEditModal(id, name, email) {
+      document.getElementById('editId').value = id
+      document.getElementById('editName').value = name
+      document.getElementById('editPassword').value = password
+      document.getElementById('editModal').style.display = 'flex'
+    }
+    
+    function openDeleteModal(id) {
+      document.getElementById('deleteId').value = id
+      document.getElementById('deleteModal').style.display = 'flex'
+    }
+    
+    function closeModal() {
+      document.querySelectorAll('.modal').forEach((modal) => {
+        modal.style.display = 'none'
+      })
+    }
+    const $ = (sel, ctx = document) => ctx.querySelector(sel)
+    const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel))
+
+
+    $$('[data-toggle="password"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const target = $(btn.dataset.target)
+        if (!target) return
+        const isPwd = target.getAttribute('type') === 'password'
+        target.setAttribute('type', isPwd ? 'text' : 'password')
+        btn.textContent = isPwd ? '🙈' : '👁️'
+    })
+})
+  </script>
+</body>
+</html>

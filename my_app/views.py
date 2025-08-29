@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-# from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required
 import cv2, base64, json, os
 # import torch
 from ultralytics import YOLO
@@ -11,18 +11,65 @@ from django.conf import settings
 from django.utils import timezone
 from .models import * 
 from django.contrib import messages
+from django.contrib.auth.models import User
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from django.contrib.auth import login, logout 
 
 import logging
 logger = logging.getLogger('my_app')
 
 
 def dashboard(request):
-    return render(request, 'my_app/dashboard.html')
+    return render(request, 'my_app/index.html')
+ 
+def account_management(request):
+    return render(request, 'my_app/admin/account.html')
 
-def sign_up_and_sign_in(request):
+
+
+
+def register_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('username')
+        password = request.POST.get('password')
+        logger.debug(f"Registering user with email: {email}")
+        try:
+            validate_email(email)
+        except ValidationError:
+            return render(request, 'my_app/admin/account.html', {'error': 'Email không hợp lệ.'})
+
+        
+        if User.objects.filter(username=email).exists():
+            return render(request, 'my_app/admin/account.html', {'error': 'Email đã tồn tại.'})
+        
+        user = User.objects.create_user(username=email, email=email, password=password)
+        user.save()
+# tạo 1 đối tượng tương ứng bên UserProfile với role mặc định là 'user'
+        UserProfile.objects.create(user=user, role='user')
+
+        return render(request, 'my_app/admin/account.html', {'success': 'Tài khoản đã được tạo thành công.'})
+    return redirect('account_management')
+
+
+def signin(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        try:
+            validate_email(email)
+        except ValidationError:
+            return render(request, 'my_app/sign_up_and_sign_in.html', {'error': 'Email không hợp lệ.'})
+        # logger.debug(f"email của bạn là: {email}")
+        user = User.objects.filter(username=email).first()
+        logger.debug(f"người dùng của bạn là: {user}")
+        if user is not None and user.check_password(password):
+            login(request, user)
+            return redirect('dashboard')
+        else:
+            return render(request, 'my_app/sign_up_and_sign_in.html', {'error': 'Email hoặc mật khẩu không đúng.'})
+        
     return render(request, 'my_app/sign_up_and_sign_in.html')
-
-
 
 # @login_required
 # def history(request):
@@ -36,12 +83,16 @@ def sign_up_and_sign_in(request):
 #         potholes = PotholeDetection.objects.filter(user=user).select_related("pothole").order_by("-detected_at")
 
 #     return render(request, "my_app/history.html", {"potholes": potholes})
+def signout(request):
+    logout(request)
+    return redirect('signin')
+
 
 def history(request):
     potholes = PotholeDetection.objects.select_related("pothole", "user").all()
     return render(request, "my_app/history.html", {"potholes": potholes})
 
-# @login_required
+@login_required
 def pothole_detail(request, pothole_id):
     """Admin bấm 'xem chi tiết' thì vào đây để xem toàn bộ detection của ổ gà"""
     pothole = get_object_or_404(Pothole, id=pothole_id)
@@ -62,10 +113,6 @@ def map(request):
         "potholes": potholes,
         "highlighted": highlighted
     })
-
-def account_management(request):
-    return render(request, 'my_app/account_management.html')
-
 
 
 
@@ -325,9 +372,6 @@ def detect_image(request):
         _, buffer = cv2.imencode(".jpg", img)
         return JsonResponse({"image": buffer.tobytes().hex()})
     return JsonResponse({"error": "No image uploaded"})
-
-
-
 
 
 # Cấu hình Roboflow

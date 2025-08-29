@@ -4,18 +4,19 @@ use pothole_detector_ai;
 
 
 -- Thêm 10 user vào auth_user
-INSERT INTO auth_user (username, password, email, first_name, last_name, is_staff, is_superuser, is_active, date_joined)
-VALUES 
-('admin1', 'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'admin1@example.com', '', '', 1, 0, 1, NOW()),
-('user1',  'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'user1@example.com', '', '', 0, 0, 1, NOW()),
-('user2',  'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'user2@example.com', '', '', 0, 0, 1, NOW()),
-('user3',  'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'user3@example.com', '', '', 0, 0, 1, NOW()),
-('user4',  'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'user4@example.com', '', '', 0, 0, 1, NOW()),
-('user5',  'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'user5@example.com', '', '', 0, 0, 1, NOW()),
-('user6',  'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'user6@example.com', '', '', 0, 0, 1, NOW()),
-('user7',  'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'user7@example.com', '', '', 0, 0, 1, NOW()),
-('user8',  'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'user8@example.com', '', '', 0, 0, 1, NOW()),
-('user9',  'pbkdf2_sha256$1000000$7MMFavJCUg9ol2hYHma7kc$+uaeNAz6tikChUfygyJCQg9ZcUdFrDO00N7mLAgEgFc=', 'user9@example.com', '', '', 0, 0, 1, NOW());
+INSERT INTO auth_user(username, password, email, first_name, last_name, is_staff, is_superuser, is_active, date_joined)
+VALUES
+    ('admin1@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'admin1@example.com', '', '', 1, 0, 1, NOW()),
+    ('user1@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user1@example.com', '', '', 0, 0, 1, NOW()),
+    ('user2@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user2@example.com', '', '', 0, 0, 1, NOW()),
+    ('user3@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user3@example.com', '', '', 0, 0, 1, NOW()),
+    ('user4@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user4@example.com', '', '', 0, 0, 1, NOW()),
+    ('user5@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user5@example.com', '', '', 0, 0, 1, NOW()),
+    ('user6@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user6@example.com', '', '', 0, 0, 1, NOW()),
+    ('user7@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user7@example.com', '', '', 0, 0, 1, NOW()),
+    ('user8@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user8@example.com', '', '', 0, 0, 1, NOW()),
+    ('user9@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user9@example.com', '', '', 0, 0, 1, NOW());
+-- Password for all users: 123456
 
 INSERT INTO my_app_userprofile (user_id, role, created_at, updated_at)
 VALUES
