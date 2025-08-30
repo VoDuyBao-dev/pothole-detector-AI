@@ -16,69 +16,70 @@
 
     <!-- Main -->
     <main>
-      <div class="video-container">
-        <!-- Giả lập video, bạn thay bằng <video> camera stream -->
-        <img src="https://picsum.photos/900/500" alt="Camera Live" />
+      <div class="tmp">
+        <div class="video-container">
+          <video id="cameraFeed" autoplay muted></video>
+          <canvas id="overlay"></canvas>
+        </div>
+        <div class="info-panel">
+          <h3>Thông tin phát hiện</h3>
+          <div class="info-item">
+            Số ổ gà: <span id="pothole-count">0</span>
+          </div>
+          <div class="info-item">
+            Độ chính xác: <span id="confidence">-</span>
+          </div>
+          <div class="info-item">
+            Diện tích: <span id="area">-</span>
+          </div>
+          <div class="info-item">
+            Kích thước: <span id="size">-</span>
+          </div>
+          <div class="info-item">
+            Độ lớn: <span id="level">-</span>
+          </div>
+          <div class="info-item">
+            GPS: <span id="gps-status">Chưa bật</span>
+            <button class="btn btn-gps" id="gpsToggle" onclick="toggleGPS()">📍 Bật GPS</button>
+          </div>
+          <div class="info-item">
+            Camera: <span id="camera-status">Chưa bật</span>
+            <button type="button" class="btn" id="cameraToggle" onclick="toggleCamera()">📷 Bật Camera</button>
+          </div>
+        </div>
       </div>
-      <div class="info-panel">
-        <h3>Thông tin phát hiện</h3>
-        <div class="info-item">
-          Số ổ gà: <span id="pothole-count">0</span>
-        </div>
-        <div class="info-item">
-          Độ chính xác: <span id="confidence">-</span>
-        </div>
-        <div class="info-item">
-          Kích thước: <span id="size">-</span>
-        </div>
-        <div class="info-item">
-          Độ lớn: <span id="level">-</span>
-        </div>
-        <div class="info-item">
-          GPS: <span id="gps">Chưa bật</span>
-        </div>
-        <button class="btn btn-gps" onclick="getLocation()">📍 Bật GPS</button>
+      <!-- IMAGE UPLOAD -->
+      <div class="box">
+        <h3>🖼️ Upload Ảnh</h3>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input type="file" name="image" accept="image/*" />
+          <button type="submit">Submit</button>
+        </form>
+        <div id="result" class="container"></div>
       </div>
     </main>
 
+    <!-- Thông báo -->
+    {% if messages %}
+      <div style="position:fixed; top:20px; right:20px; z-index:9999;">
+        {% for message in messages %}
+          <div style="background-color:
+            {% if 'error' in message.tags %}
+               #e74c3c
+            {% elif 'success' in message.tags %}
+               #2ecc71
+            {% else %}
+               #f39c12
+            {% endif %};
+            color:white; padding:12px 20px; border-radius:8px; margin-bottom:10px;
+            animation: fadeInOut 4s forwards;">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
     <script>
-      // Theme toggle
-      function toggleTheme() {
-        document.body.classList.toggle('dark')
-        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light')
-      }
-      if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark')
-      
-      // Fake data cập nhật trực tiếp
-      setInterval(() => {
-        const count = Math.floor(Math.random() * 5)
-        const conf = (Math.random() * 0.5 + 0.5).toFixed(2)
-        const area = Math.floor(Math.random() * 5000) + 500
-        let level = 'Nhỏ'
-        if (area > 3000) level = 'Lớn'
-        else if (area > 1500) level = 'Vừa'
-      
-        document.getElementById('pothole-count').innerText = count
-        document.getElementById('confidence').innerText = conf
-        document.getElementById('size').innerText = area + ' px²'
-        document.getElementById('level').innerText = level
-      }, 3000)
-      
-      // GPS
-      function getLocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              document.getElementById('gps').innerText = pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5)
-            },
-            () => {
-              document.getElementById('gps').innerText = 'Không lấy được vị trí'
-            }
-          )
-        } else {
-          document.getElementById('gps').innerText = 'GPS không hỗ trợ'
-        }
-      }
+      const detect_image = "{% url 'detect_image' %}"
+      const liveDetectionUrl = "{% url 'live_detection' %}"
     </script>
+    <script src="{% static 'my_app/js/live_detection.js' %}"></script>
   </body>
 </html>

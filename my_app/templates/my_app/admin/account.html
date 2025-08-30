@@ -16,17 +16,17 @@
   <main>
     <h1>Quản lý tài khoản</h1>
     {% if messages %}
-  <div>
-    {% for message in messages %}
-      <div 
-        class="alert 
-        {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}"
-        role="alert">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
+    <div>
+      {% for message in messages %}
+        <div 
+          class="alert 
+          {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}"
+          role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
     <div class="add">
       <button class="btn btn-add" onclick="openAddModal()"> ➕ Thêm tài khoản</button>
@@ -39,8 +39,8 @@
         <form method="post" action="{% url 'register' %}">
           {% csrf_token %}
           <div class="form-group">
-            <label for="addEmail">Email</label>
-            <input type="email" class="form-control" id="addEmail" name="email" required />
+            <label for="addEmail">Tên đăng nhập</label>
+            <input type="text" class="form-control" id="addEmail" name="username" required />
           </div>
           <div class="form-group">
             <label for="password">Password</label>
@@ -98,8 +98,8 @@
           {% csrf_token %}
           <input type="hidden" id="editId" name="id"/>
           <div class="form-group">
-            <label for="editName">Tên</label>
-            <input type="text" class="form-control" id="editName" name="username" required />
+            <label for="editUsername">Tên</label>
+            <input type="text" class="form-control" id="editUsername" name="username" required />
           </div>
           <div class="form-group">
             <label for="editEmail">Email</label>
@@ -132,26 +132,55 @@
 
   <script>
     function openAddModal() {
-      document.getElementById('addModal').style.display = 'flex'
+      document.getElementById('addModal').style.display = 'flex';
     }
 
-    function openEditModal(id, name, email) {
-      document.getElementById('editId').value = id
-      document.getElementById('editName').value = name
-      document.getElementById('editEmail').value = email
-      document.getElementById('editModal').style.display = 'flex'
+    function openEditModal(id, username, email) {
+      // Đảm bảo các phần tử tồn tại trước khi gán giá trị
+      const editId = document.getElementById('editId');
+      const editUsername = document.getElementById('editUsername');
+      const editEmail = document.getElementById('editEmail');
+
+      if (editId && editUsername && editEmail) {
+        editId.value = id;
+        editUsername.value = username;
+        editEmail.value = email;
+        document.getElementById('editModal').style.display = 'flex';
+      } else {
+        console.error('One or more input elements not found');
+      }
     }
     
     function openDeleteModal(id) {
-      document.getElementById('deleteId').value = id
-      document.getElementById('deleteModal').style.display = 'flex'
+      const deleteId = document.getElementById('deleteId');
+      if (deleteId) {
+        deleteId.value = id;
+        document.getElementById('deleteModal').style.display = 'flex';
+      } else {
+        console.error('Delete input element not found');
+      }
     }
     
     function closeModal() {
       document.querySelectorAll('.modal').forEach((modal) => {
-        modal.style.display = 'none'
-      })
+        modal.style.display = 'none';
+      });
     }
+
+    // Utility functions for querySelector
+    const $ = (sel, ctx = document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+    // Toggle password visibility (if needed in the future)
+    $$('[data-toggle="password"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = $(btn.dataset.target);
+        if (!target) return;
+        const isPwd = target.getAttribute('type') === 'password';
+        target.setAttribute('type', isPwd ? 'text' : 'password');
+        btn.textContent = isPwd ? '🙈' : '👁️';
+      });
+    });
   </script>
 </body>
 </html>

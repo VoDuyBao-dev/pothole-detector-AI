@@ -12,10 +12,16 @@ urlpatterns = [
     
     # users
     path('', views.dashboard, name= 'dashboard'),
+
+    path("live_detection_page/", views.live_detection_page, name="live_detection_page"),  # trả template
+    path("live_detection/", views.live_detection, name="live_detection"),        # POST nhận frame
     
-    path('live_detection/', views.live_detection, name='live_detection'),
+    path("detect_image/", views.detect_image, name="detect_image"),
+
     path('map/', views.map, name='map'),
     path('history/', views.history, name='history'),
+    path('pothole_detail/<int:pothole_id>/', views.pothole_detail, name='pothole_detail'),
+
 
     # admin
     # path('account_management/', views.account_management, name='account_management'),
@@ -29,6 +35,4 @@ urlpatterns = [
     # xóa tài khoản:
     path('delete_account/', views.delete_account, name='delete_account'),
     
-
-
 ]
