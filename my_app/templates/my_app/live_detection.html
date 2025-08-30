@@ -1,171 +1,85 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chạy trực tiếp</title>
-    <style>
-      :root {
-        --primary: #74bbeeff;
-        --secondary: #fd91fdff;
-        --accent: #7eea82ff;
-        --light: #eef6ff;
-        --dark-bg: #1e1e2f;
-        --dark-text: #f5f5f5;
-      }
-      body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: var(--light);
-        color: #333;
-        display: flex;
-        height: 100vh;
-      }
-      body.dark {
-        background-color: var(--dark-bg);
-        color: var(--dark-text);
-      }
-      /* Main content */
-      main {
-        flex: 1;
-        display: flex;
-        flex-direction: row;
-        padding: 20px;
-        gap: 20px;
-      }
-      .video-container {
-        flex: 3;
-        background: #000;
-        border-radius: 10px;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-      }
-      .video-container video,
-      .video-container img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-      }
-      .info-panel {
-        flex: 1;
-        background: var(--light);
-        border-radius: 10px;
-        padding: 15px;
-      }
-      body.dark .info-panel {
-        background: #2c2c3a;
-      }
-      .info-panel h3 {
-        margin-top: 0;
-        margin-bottom: 15px;
-        font-size: 18px;
-        text-align: center;
-      }
-      .info-item {
-        margin-bottom: 15px;
-        padding: 10px;
-        background: var(--primary);
-        border-radius: 8px;
-        font-size: 14px;
-      }
-      .info-item span {
-        font-weight: bold;
-      }
-      .btn {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        text-align: center;
-        margin-top: 10px;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      .btn-gps {
-        background: var(--accent);
-        color: #000;
-      }
-      .btn-theme {
-        background: var(--secondary);
-        color: #fff;
-      }
-    </style>
+    <link rel="stylesheet" href="{% static 'my_app/css/live_detection.css' %}" />
+    <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
   </head>
   <body data-theme="light">
     <!-- Sidebar -->
     <aside class="sidebar">
-      {% include 'my_app/sidebar.html' %}
+      {% include 'my_app/menu.html' %}
     </aside>
 
     <!-- Main -->
     <main>
-      <div class="video-container">
-        <!-- Giả lập video, bạn thay bằng <video> camera stream -->
-        <img src="https://picsum.photos/900/500" alt="Camera Live" />
+      <div class="tmp">
+        <div class="video-container">
+          <video id="cameraFeed" autoplay muted></video>
+          <canvas id="overlay"></canvas>
+        </div>
+        <div class="info-panel">
+          <h3>Thông tin phát hiện</h3>
+          <div class="info-item">
+            Số ổ gà: <span id="pothole-count">0</span>
+          </div>
+          <div class="info-item">
+            Độ chính xác: <span id="confidence">-</span>
+          </div>
+          <div class="info-item">
+            Diện tích: <span id="area">-</span>
+          </div>
+          <div class="info-item">
+            Kích thước: <span id="size">-</span>
+          </div>
+          <div class="info-item">
+            Độ lớn: <span id="level">-</span>
+          </div>
+          <div class="info-item">
+            GPS: <span id="gps-status">Chưa bật</span>
+            <button class="btn btn-gps" id="gpsToggle" onclick="toggleGPS()">📍 Bật GPS</button>
+          </div>
+          <div class="info-item">
+            Camera: <span id="camera-status">Chưa bật</span>
+            <button type="button" class="btn" id="cameraToggle" onclick="toggleCamera()">📷 Bật Camera</button>
+          </div>
+        </div>
       </div>
-      <div class="info-panel">
-        <h3>Thông tin phát hiện</h3>
-        <div class="info-item">
-          Số ổ gà: <span id="pothole-count">0</span>
-        </div>
-        <div class="info-item">
-          Độ chính xác: <span id="confidence">-</span>
-        </div>
-        <div class="info-item">
-          Kích thước: <span id="size">-</span>
-        </div>
-        <div class="info-item">
-          Độ lớn: <span id="level">-</span>
-        </div>
-        <div class="info-item">
-          GPS: <span id="gps">Chưa bật</span>
-        </div>
-        <button class="btn btn-gps" onclick="getLocation()">📍 Bật GPS</button>
+      <!-- IMAGE UPLOAD -->
+      <div class="box">
+        <h3>🖼️ Upload Ảnh</h3>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input type="file" name="image" accept="image/*" />
+          <button type="submit">Submit</button>
+        </form>
+        <div id="result" class="container"></div>
       </div>
     </main>
 
+    <!-- Thông báo -->
+    {% if messages %}
+      <div style="position:fixed; top:20px; right:20px; z-index:9999;">
+        {% for message in messages %}
+          <div style="background-color:
+            {% if 'error' in message.tags %}
+               #e74c3c
+            {% elif 'success' in message.tags %}
+               #2ecc71
+            {% else %}
+               #f39c12
+            {% endif %};
+            color:white; padding:12px 20px; border-radius:8px; margin-bottom:10px;
+            animation: fadeInOut 4s forwards;">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
     <script>
-      // Theme toggle
-      function toggleTheme() {
-        document.body.classList.toggle('dark')
-        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light')
-      }
-      if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark')
-      
-      // Fake data cập nhật trực tiếp
-      setInterval(() => {
-        const count = Math.floor(Math.random() * 5)
-        const conf = (Math.random() * 0.5 + 0.5).toFixed(2)
-        const area = Math.floor(Math.random() * 5000) + 500
-        let level = 'Nhỏ'
-        if (area > 3000) level = 'Lớn'
-        else if (area > 1500) level = 'Vừa'
-      
-        document.getElementById('pothole-count').innerText = count
-        document.getElementById('confidence').innerText = conf
-        document.getElementById('size').innerText = area + ' px²'
-        document.getElementById('level').innerText = level
-      }, 3000)
-      
-      // GPS
-      function getLocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              document.getElementById('gps').innerText = pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5)
-            },
-            () => {
-              document.getElementById('gps').innerText = 'Không lấy được vị trí'
-            }
-          )
-        } else {
-          document.getElementById('gps').innerText = 'GPS không hỗ trợ'
-        }
-      }
+      const detect_image = "{% url 'detect_image' %}"
+      const liveDetectionUrl = "{% url 'live_detection' %}"
     </script>
+    <script src="{% static 'my_app/js/live_detection.js' %}"></script>
   </body>
 </html>

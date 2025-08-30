@@ -1,0 +1,53 @@
+  :root {
+        --primary: #74bbeeff;
+        --accent-pink: #fd91fdff;
+        --accent-green: #7eea82ff;
+        --bg-light: #eef6ff;
+        --text-dark: #333;
+        --text-light: #fff;
+      }
+      
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: var(--bg-light);
+        color: var(--text-dark);
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
+      
+      .map-container {
+        flex: 1;
+        height: 100vh;
+      }
+      
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+      
+      .legend {
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        line-height: 1.5;
+        font-size: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      
+      .legend span {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-right: 6px;
+        border-radius: 50%;
+      }
+      
+      .dot-small {
+        background: green;
+      }
+      
+      .dot-large {
+        background: red;
+      }

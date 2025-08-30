@@ -1,7 +1,7 @@
 | Phiên bản   | Dung lượng `.pt` | Tốc độ     | Độ chính xác | Khi nào dùng                      |
 | ----------- | ---------------- | ---------- | ------------ | --------------------------------- |
 | **YOLO11n** | \~6–7 MB         | Rất nhanh  | Vừa          | Thiết bị yếu, cần real-time       |
-| **YOLO11s** | \~20–25 MB       | Nhanh      | Khá          | Dự án vừa, chạy CPU/GPU tầm trung |
+| **YOLO11s** | \~20–25 MB       | Nhanh      | Khá          | Dự án vừa, chạy CPU/GPU tầm trung |   con Lan sử dụng mô hình này để huấn luyện trên google colab
 | **YOLO11m** | \~45–50 MB       | Trung bình | Cao          | Khi cần độ chính xác hơn          |
 | **YOLO11l** | \~80–90 MB       | Chậm hơn   | Rất cao      | Server mạnh, không cần real-time  |
 | **YOLO11x** | \~120–130 MB     | Chậm       | Cao nhất     | GPU mạnh, bài toán cực khó        |
@@ -16,13 +16,7 @@ sử dụng django, yolo11s, mysql, camera điện thoại.
 
 
 7 giao diện. 
-phần giao diện đăng kí, 
-
-
-
-
-
-
+phần giao diện đăng nhập.
 
 
 giao diện quản lí tài khoản hiển thị danh sách tài khoản và có hiển thị nút xóa hoặc sử nếu nhấn nút thì hiển thị một giao diện nhỏ hơn đè lên giao diễn cũ để chỉnh sửa thông tin hoặc thông báo muốn xóa tài khoản. 
@@ -50,3 +44,152 @@ cốt lõi:
 (Lan)
 
 
+
+
+cốt lõi:
+- ppt vs word
+- GPS: nếu người dùng bật vị trí trên điện thoại.
+- giao diện map thì hiển thị một map có các chấm xanh hiển thị ổ gà còn nhỏ còn dấu chấm đỏ hiểu thị ổ gà lớn.  
+(Châu)
+
+- một thanh menu ở phía bên trái có các chức năng tổng quan, chạy trực tiếp, map, lịch sử, quản lí tài khoản, huấn luyện(chỉ có admin mới sử dụng được).
+
+- đăng nhập.
+- giao diện chạy trực tiếp hiểu thị một giao diện lớn cho người dùng quan sát trực tiếp đường đi và hiển thị thông tin trực tiếp nêu nhìn thấy ổ gà nào, có các thông tin hiểu thị bên cạnh như Số ổ gà hiện phát hiện trong frame.
+- trang dashboard có các chứ năng như hiển thị số lượng ổ gà trong ngày, biểu đồ thông kế số lượng ổ gà theo tháng.(chung admin vs user)  
+(Bảo)
+- Tạo csdl
+- chạy trực tiếp map, lịch sử, huấn luyện(chỉ có admin mới sử dụng được).
+- Độ chính xác (confidence).
+- Kích thước (area hoặc bounding box size).
+- giao diện lịch sử hiện thị thông tin các ổ gà tìm thấy. hiển thị theo trang nếu số lượng ổ gà tìm thấy nhiều.
+- giao diện huấn luyện có chức năng thêm hình ảnh để huấn luyện tiếp mô hình. 
+(Lan)
+
+Python = lo AI + backend (phát hiện ổ gà, xử lý dữ liệu).
+JS = lo hiển thị map + UI (vẽ marker, popup, màu sắc).
+
+lịch sử phát hiện chia làm 2 phần một là của người dùng còn lại là của admin
+về phía người dùng thì hiển thị toàn bộ các ổ gà mà người đó đã phát hiện khi đi trên đường và lúc phát hiện có bật định vị
+còn về phía admin thì hiện thị các ổ gà ở bảng pothole (lưu thông tin của người dùng phát hiện ổ gà đó đầu tiên ) và sẽ có nút ortheruser để xem có những người dùng nào khác cùng phát hiện ra ổ gà đó. 
+và có 
+
+cài lại ảo
+tối ưu
+hiển thị thông tin ổ gà phát hiện được.
+huấn luyện trên google colab
+lịch sử thì thêm một trường ảnh nữa
+
+
+
+tạo các bảng trong cơ sở dữ liệu của dự án phát hiện ổ gà cho mình. mình sử dụng django để làm bài này. (nhớ comment chi tiết cho mình tác dụng của bảng và ý nghĩa ngắn gọn của các thuộc tính có trong bảng. nhớ comment bằng tiếng Việt nha)
+Dự án của mình có các chức năng theo các giao diện như sau:
+- giao diện map thì hiển thị một map có các chấm xanh hiển thị ổ gà còn nhỏ còn dấu chấm đỏ hiểu thị ổ gà lớn.  
+- một thanh menu ở phía bên trái có các chức năng tổng quan, chạy trực tiếp, map, lịch sử, quản lí tài khoản, huấn luyện(chỉ có admin mới sử dụng được).
+- đăng nhập. (admin cung cấp thông tin tài khoản cho người dùng gồm có tên và mật khẩu của tài khoản ) 
+- trang dashboard có các chứ năng như hiển thị số lượng ổ gà trong ngày, biểu đồ thông kế số lượng ổ gà theo tháng.  
+- giao diện chạy trực tiếp hiểu thị một giao diện lớn cho người dùng quan sát trực tiếp đường đi và hiển thị thông tin trực tiếp nêu nhìn thấy ổ gà nào, có các thông tin hiểu thị bên cạnh như Số ổ gà hiện phát hiện trong frame, hiển thị độ chính xác (confidence) ,kích thước (area hoặc bounding box size) số ổ gà, độ lớn (gồm: nhỏ và lớn). lưu thông tin ổ gà nếu người dùng bật vị trí. 
+- lịch sử ổ gà mà người dùng phát hiện (nếu không bật định vị thì không lưu thông tin ổ gà nên sẽ không hiển thị những ổ gà đã phát hiện khi di chuyển ). hiển thị theo trang nếu số lượng ổ gà tìm thấy nhiều.
+- giao diện huấn luyện có chức năng thêm hình ảnh để huấn luyện tiếp mô hình. (mình có sử dụng google colab để sử dụng yolo huấn luyện được hơn 7000 ảnh rồi và mình có tải file .pt về máy để chạy dự án.)
+- quản lí tài khoản người dùng (có thêm, xóa, sửa). 
+
+
+Phải có dataset 
+còn nếu chỉ có ảnh thôi thì phải làm sao để có được file train và file val 
+
+Một pipeline rõ ràng để:
+
+**Web (Django) có chức năng "huấn luyện thêm" → thực chất là upload ảnh/dữ liệu → đồng bộ lên Google Drive → Colab sẽ train lại và xuất model mới → web cập nhật model.**
+# 🔹 Pipeline chi tiết
+
+## 1. **Trên Django (web admin upload ảnh)**
+
+* Admin upload ảnh/nhãn mới (dataset).
+* Django lưu file này vào thư mục `media/dataset/`.
+* Bạn có thể tổ chức như YOLO dataset:
+
+  ```
+  media/dataset/images/train/
+  media/dataset/images/val/
+  media/dataset/labels/train/
+  media/dataset/labels/val/
+  ```
+* Sau khi upload, Django có thể:
+
+  * Nén thư mục dataset thành `.zip`.
+  * Tự động **upload `.zip` lên Google Drive** (bằng API).
+
+📦 Thư viện cần:
+
+* `django` (đã có)
+* `google-api-python-client` (upload dữ liệu lên Drive)
+* `google-auth-oauthlib` (xác thực tài khoản Google)
+
+---
+
+## 2. **Trên Google Colab (huấn luyện)**
+
+* Trong Colab, bạn mount Google Drive:
+
+  ```python
+  from google.colab import drive
+  drive.mount('/content/drive')
+  ```
+* Colab đọc dataset `.zip` mà web đã upload.
+* Giải nén dataset vào `/content/dataset/`.
+* Huấn luyện lại YOLO11s:
+
+  ```python
+  from ultralytics import YOLO
+
+  model = YOLO("yolo11s.pt")  # load model cũ
+  model.train(data="data.yaml", epochs=20, imgsz=640)
+  ```
+* Sau khi train, xuất ra model mới `best.pt`.
+* Lưu model này vào Google Drive:
+
+  ```python
+  model.export(format="torchscript")  # tuỳ chọn export
+  !cp runs/detect/train/weights/best.pt /content/drive/MyDrive/pothole_model/best.pt
+  ```
+
+---
+
+## 3. **Web cập nhật model**
+
+* Django có thể kết nối Google Drive API để tải `best.pt` mới về.
+* Lưu vào thư mục `media/models/best.pt`.
+* Trong code inference của web:
+
+  ```python
+  from ultralytics import YOLO
+  model = YOLO("media/models/best.pt")
+  ```
+* Như vậy, mỗi khi admin “train thêm”, thực chất:
+
+  * Web upload dataset mới lên Drive.
+  * Admin chạy Colab notebook để train lại.
+  * Web tải model `.pt` mới về để sử dụng.
+
+---
+
+# 🔹 Ưu điểm
+
+✅ Web nhẹ → không cần huấn luyện trên máy yếu.
+✅ Vẫn có tính năng “train thêm” cho admin.
+✅ Có thể mở rộng sau này sang Cloud (AWS, GCP, Azure).
+
+# 🔹 Nhược điểm
+
+⚠️ Huấn luyện vẫn cần **con người mở Colab** để chạy (không hoàn toàn tự động 100%).
+⚠️ Upload/download model giữa web ↔ Drive tốn thời gian.
+
+---
+
+👉 Mình có thể viết cho bạn:
+
+1. **Code Django upload dataset lên Google Drive.**
+2. **Notebook Colab mẫu để train và lưu model về Drive.**
+3. **Code Django tải model `.pt` mới về và load.**
+
+Bạn có muốn mình viết **toàn bộ code mẫu 3 phần này** để bạn ghép vào dự án không?

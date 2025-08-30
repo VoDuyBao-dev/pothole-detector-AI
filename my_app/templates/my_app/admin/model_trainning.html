@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Huấn luyện mô hình</title>
+
+    <link rel="stylesheet" href="{% static 'my_app/css/admin/model_trainning.css' %}" />
+    <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
+  </head>
+  <body data-theme="light">
+    <aside class="sidebar">
+      {% include 'my_app/menu.html' %}
+    </aside>
+
+    <main>
+      <h2>Huấn luyện mô hình</h2>
+
+      <div class="upload-container">
+        <div class="upload-box" id="dropZone">
+          <p>Kéo thả hoặc nhấn để chọn hình ảnh</p>
+          <input type="file" id="fileInput" multiple accept="image/*" hidden />
+        </div>
+        <div class="preview" id="preview"></div>
+      </div>
+
+      <div class="controls">
+        <button class="train-btn" id="trainBtn" onclick="startTraining()" disabled>Bắt đầu huấn luyện</button>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="status" id="status"></div>
+      </div>
+    </main>
+  </body>
+</html>

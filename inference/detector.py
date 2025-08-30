@@ -14,7 +14,7 @@ def detect_image(input_path: str, save_vis: bool = True, conf: float = 0.25, iou
     Trả về:
       - boxes: list[dict] = [{x1,y1,x2,y2,conf,cls}]
       - vis_path: đường dẫn ảnh vẽ bbox (nếu save_vis=True)
-    """
+    """ 
     results = model.predict(
         source=input_path,
         conf=conf,

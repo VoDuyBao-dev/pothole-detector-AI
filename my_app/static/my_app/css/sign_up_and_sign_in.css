@@ -33,8 +33,7 @@ body {
     margin: 0;
     font-family: Inter, Segoe UI, Roboto, system-ui, -apple-system, Arial, sans-serif;
     color: var(--ink);
-    background: linear-gradient(180deg, rgba(110, 193, 228, 0.2), rgba(247, 197, 159, 0.15), rgba(123, 196, 127, 0.2)), #fafafa;
-    display: grid;
+    background: linear-gradient(145deg, #74bbeeff, #fd91fdff, #7eea82ff, #eef6ff);
     place-items: center;
     padding: 24px;
 }
@@ -45,6 +44,8 @@ body {
     grid-template-columns: 1.2fr 1fr;
     gap: 28px;
     align-items: stretch;
+    justify-content: center;
+    margin: 10% auto;
 }
 
 @media (max-width: 900px) {
@@ -63,7 +64,8 @@ body {
 
 /* Khối giới thiệu/branding */
 .brand {
-    background: linear-gradient(145deg, #74bbeeff, #fd91fdff, #7eea82ff, #eef6ff);
+    background: linear-gradient(180deg, rgba(110, 193, 228, 0.2), rgba(247, 197, 159, 0.15), rgba(123, 196, 127, 0.2)), #fafafa;
+    display: grid;
     border-radius: calc(var(--radius) + 8px);
     padding: 36px;
     position: relative;
@@ -127,6 +129,7 @@ body {
     display: flex;
     gap: 12px;
     align-items: flex-start;
+    font-weight: 600;
 }
 
 .feat i {
@@ -144,6 +147,7 @@ body {
 
 /* Thẻ form */
 .card {
+    align-content: center;
     background: var(--white);
     border-radius: calc(var(--radius) + 2px);
     box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
@@ -156,7 +160,7 @@ body {
     background: #eef6ff;
     border-radius: 999px;
     padding: 6px;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 
 .tab {
@@ -166,9 +170,15 @@ body {
     border-radius: 999px;
     cursor: pointer;
     user-select: none;
-    font-weight: 600;
+    font-weight: 900;
     color: #0c4a6e;
     transition: 0.2s ease;
+    font-family: 'Inter', sans-serif;
+
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #4facfe, #43e97b);
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .tab[aria-selected='true'] {
@@ -195,6 +205,7 @@ body {
 }
 
 form {
+    margin-top: 40px;
     display: grid;
     gap: 25px;
 }
@@ -276,6 +287,7 @@ form {
 .btn {
     display: inline-flex;
     gap: 10px;
+    font-size: 17px;
     align-items: center;
     justify-content: center;
     width: 100%;
@@ -392,4 +404,44 @@ input[type='checkbox']:focus {
     outline: none;
     box-shadow: var(--ring);
     border-radius: 4px;
+}
+
+.msg {
+    padding: 8px 12px;
+    margin: 3px 0;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.4s ease;
+}
+
+/* Thông báo lỗi */
+.msg.error {
+    background-color: #fdecea;
+    border: 1px solid #f5c2c0;
+    color: #b71c1c;
+}
+
+/* Thông báo thành công */
+.msg.success {
+    background-color: #e7f7ec;
+    border: 1px solid #b7e1c0;
+    color: #1b5e20;
+}
+
+/* Animation nhỏ khi hiện lên */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

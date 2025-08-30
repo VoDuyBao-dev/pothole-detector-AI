@@ -10,11 +10,12 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard · Pothole AI</title>
   <link rel="stylesheet" href="{% static 'my_app/css/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
-      {% include 'my_app/sidebar.html' %}
+      {% include 'my_app/menu.html' %}
     </aside>
 
     <section class="main">
@@ -26,6 +27,11 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
         <div class="actions">
           {% comment %} <button class="btn" id="themeToggle">Sáng/Tối</button> {% endcomment %}
           <button class="btn primary" id="refreshBtn">Làm mới</button>
+        </div>
+        <div class="actions">
+          {% comment %} <button class="btn" id="themeToggle">Sáng/Tối</button> {% endcomment %}
+          <button class="btn primary" id="refreshBtn">👋 Xin chào, {{ request.user.username }}  </button>
+
         </div>
       </header>
 
@@ -89,5 +95,6 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
   </div>
 
   <script src="{% static 'my_app/js/dashboard.js' %}"></script>
+  <script src="{% static 'my_app/js/sidebar.js' %}"></script>
 </body>
 </html>
