@@ -12,9 +12,22 @@ class UserProfile(models.Model):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
+    
+    # xóa mềm
+    def soft_delete(self):
+        
+        self.is_deleted = True
+        self.save()
+
+# khôi phục tài khoản
+    def restore(self):
+    
+        self.is_deleted = False
+        self.save()
 
 
 class Pothole(models.Model):
