@@ -24,11 +24,15 @@ urlpatterns = [
 
 
     # admin
-    path('account_management/', views.account_management, name='account_management'),
+    # path('account_management/', views.account_management, name='account_management'),
     path('model_training/', views.model_training, name='model_training'),
     # Thêm tài khoản của admin
-    path('register/', views.register_view, name='register'),
+    path('register/', register_view, name='register'),
+    # quản lý tài khoản của admin
+    path('accounts/', views.account_list, name='account_list'),
+    # sửa tài khoản của admin
+    path('edit_account/', views.edit_account, name='edit_account'),
+    # xóa tài khoản:
+    path('delete_account/', views.delete_account, name='delete_account'),
     
-
-
 ]
