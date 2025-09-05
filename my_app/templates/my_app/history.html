@@ -7,6 +7,41 @@
     <title>Lịch sử phát hiện ổ gà</title>
     <link rel="stylesheet" href="{% static 'my_app/css/history.css' %}" />
     <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
+  <style>
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    .pagination a,
+    .pagination span {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #59a7e7ff;
+      border: 1px solid #ddd;
+      transition: all 0.3s ease;
+    }
+
+    .pagination a:hover {
+      background-color: #f0f0f0;
+      color: #042642ff;
+    }
+
+    .pagination .pnow {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1f5077ff;
+      text-decoration: underline;
+      text-align: center;
+      margin: 10px 0;
+    }
+  </style>
   </head>
   <body data-theme="light">
     <aside class="sidebar">
@@ -39,7 +74,7 @@
                 </td>
                 <td>{{ pothole.first_detected_by.username }}</td>
                 <td>{{ pothole.detections_count }}</td>
-                <td>{{ pothole.confidence_avg|floatformat:2 }}%</td>
+                <td>{{ pothole.confidence_avg|floatformat:3 }}%</td>
                 <td>
                   {% if pothole.status == 'active' %}
                     <span class="badge bg-danger">Chưa sửa</span>
@@ -112,6 +147,24 @@
           </tbody>
         </table>
       {% endif %}
+
+      <div class="pagination">
+      {% if potholes.has_previous %}
+        <a href="?page={{ potholes.previous_page_number }}">« Trước</a>
+      {% endif %}
+
+      {% for i in potholes.paginator.page_range %}
+        {% if potholes.number == i %}
+          <span class="pnow">{{ i }}</span>
+        {% else %}
+          <a href="?page={{ i }}">{{ i }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if potholes.has_next %}
+        <a href="?page={{ potholes.next_page_number }}">Sau »</a>
+      {% endif %}
+    </div>
     </main>
 
     <!-- Modal hiển thị danh sách phát hiện -->
@@ -136,6 +189,7 @@
         </table>
       </div>
     </div>
+    
 
 
     <script>

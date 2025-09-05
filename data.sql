@@ -18,18 +18,18 @@ VALUES
     ('user9@example.com', 'pbkdf2_sha256$1000000$T4PtqQKFMNbe28JknKMP4g$h3KYcK0H1+DCQcfywuXPjtbBXT09Eng7fU4zadB1WvQ=', 'user9@example.com', '', '', 0, 0, 1, NOW());
 -- Password for all users: 123456
 
-INSERT INTO my_app_userprofile (user_id, role, created_at, updated_at)
+INSERT INTO my_app_userprofile (user_id, role, created_at, updated_at, is_deleted)
 VALUES
-(1, 'admin', NOW(), NOW()),
-(2, 'user', NOW(), NOW()),
-(3, 'user', NOW(), NOW()),
-(4, 'user', NOW(), NOW()),
-(5, 'user', NOW(), NOW()),
-(6, 'user', NOW(), NOW()),
-(7, 'user', NOW(), NOW()),
-(8, 'user', NOW(), NOW()),
-(9, 'user', NOW(), NOW()),
-(10, 'user', NOW(), NOW());
+(1, 'admin', NOW(), NOW(), 0),
+(2, 'user', NOW(), NOW(), 0),
+(3, 'user', NOW(), NOW(), 0),
+(4, 'user', NOW(), NOW(), 0),
+(5, 'user', NOW(), NOW(), 0),
+(6, 'user', NOW(), NOW(), 0),
+(7, 'user', NOW(), NOW(), 0),
+(8, 'user', NOW(), NOW(), 0),
+(9, 'user', NOW(), NOW(), 0),
+(10, 'user', NOW(), NOW(), 0);
 
 
 INSERT INTO my_app_pothole (latitude, longitude, first_detected_by_id, status, confidence_avg, detections_count)

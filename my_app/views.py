@@ -18,6 +18,7 @@ from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login, logout 
+from django.core.paginator import Paginator
 
 import logging
 logger = logging.getLogger('my_app')
@@ -167,23 +168,32 @@ def history(request):
     - Admin: danh sách Pothole (tổng quan).
     - User: danh sách PotholeDetection của chính mình, kèm ảnh và avg confidence của ổ gà.
     """
+    page_number = request.GET.get("page")
     if _is_admin(request.user):
         potholes = (
             Pothole.objects
             .select_related("first_detected_by")
             .order_by("id")  # Sắp xếp tăng dần theo id
         )
+        paginator = Paginator(potholes, 8)
+        potholes = paginator.get_page(page_number)
+
+        # Xử lý confidence_avg cho từng item trong trang hiện tại
+        for p in potholes:
+            p.confidence_avg = p.confidence_avg * 100 if p.confidence_avg else 0
+            # logger.debug(p.confidence_avg)
         # Lấy thông tin detection của từng pothole
         # detections = (
         #     PotholeDetection.objects
         #     .select_related("user", "pothole")
         #     .values('latitude', 'longitude')
         #     .order_by("-detected_at")
-        # )
+        # 
+
         return render(request, "my_app/history.html", {
             "is_admin": True,
             "potholes": potholes,
-            # "detections": detections    
+            # "detections": detections
         })
     else:
         detections = (
@@ -193,9 +203,14 @@ def history(request):
             .prefetch_related("images")           # để hiển thị ảnh nhanh
             .order_by("detected_at")
         )
+        paginator = Paginator(detections, 8)
+        detections = paginator.get_page(page_number)
+
+        for d in detections:
+            d.confidence_avg = d.confidence_avg * 100 if d.confidence_avg else 0
         return render(request, "my_app/history.html", {
             "is_admin": False,
-            "potholes": detections,               # template đang dùng biến 'potholes'
+            "potholes": detections            # template đang dùng biến 'potholes'
         })
 
 
