@@ -181,7 +181,7 @@ def history(request):
         # Xử lý confidence_avg cho từng item trong trang hiện tại
         for p in potholes:
             p.confidence_avg = p.confidence_avg * 100 if p.confidence_avg else 0
-            logger.debug(p.confidence_avg)
+            # logger.debug(p.confidence_avg)
         # Lấy thông tin detection của từng pothole
         # detections = (
         #     PotholeDetection.objects
