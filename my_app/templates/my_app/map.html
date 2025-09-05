@@ -19,28 +19,91 @@
       <div id="map"></div>
     </div>
 
+    <!-- GPS Info -->
+    <div class="info-item">
+      GPS: <span id="gps-status">Chưa bật</span>
+      <button class="btn btn-gps" id="gpsToggle" onclick="toggleGPS()">📍 Bật GPS</button>
+    </div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
     <script>
-    var map = L.map('map').setView([10.762622, 106.660172], 13); // vị trí mặc định (TP.HCM)
+      var map = L.map("map").setView([10.762622, 106.660172], 13); // default TP.HCM
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
 
-    {% for pothole in potholes %}
-        var marker = L.circleMarker([{{ pothole.latitude }}, {{ pothole.longitude }}], {
-            color: {% if pothole.id == highlighted.id %} 'blue' {% elif pothole.detections_count > 3 %} 'red' {% else %} 'green' {% endif %},
-            radius: {% if pothole.id == highlighted.id %} 10 {% elif pothole.confidence_avg > 0.7 %} 8 {% else %} 5 {% endif %}
-        }).addTo(map);
+      {% for pothole in potholes %}
+        var color = "{{ pothole.level }}" === "large" ? "red" : "blue";
+        var marker = L.circleMarker(
+          [{{ pothole.latitude }}, {{ pothole.longitude }}],
+          {
+            color: color,
+            radius: 8,
+            fillOpacity: 0.8,
+          }
+        ).addTo(map);
 
-        marker.bindPopup("Ổ gà ID: {{ pothole.id }}<br>Phát hiện: {{ pothole.detections_count }} lần <br> Độ tin cậy TB: {{ pothole.confidence_avg|floatformat:2 }}%");
-    {% endfor %}
+        marker.bindPopup(`
+          <b>Ổ gà #{{ pothole.id }}</b><br>
+          Loại: {{ pothole.level }}<br>
+          Người phát hiện đầu tiên: {{ pothole.user }}<br>
+          Confidence TB: {{ pothole.confidence_avg|floatformat:2 }}<br>
+          Số lần phát hiện: {{ pothole.detections_count }}<br>
+          Thời gian: {{ pothole.detected_at }}
+        `);
+      {% endfor %}
 
-    {% if highlighted %}
-        map.setView([{{ highlighted.latitude }}, {{ highlighted.longitude }}], 16);
-    {% endif %}
-</script>
+      // GPS toggle
+      let isGPSActive = false;
+      let gpsWatchId = null;
+      window.currentGPS = null;
+
+      function toggleGPS() {
+        const gpsButton = document.getElementById("gpsToggle");
+        const gpsStatus = document.getElementById("gps-status");
+
+        if (!isGPSActive) {
+          if (navigator.geolocation) {
+            gpsWatchId = navigator.geolocation.watchPosition(
+              (pos) => {
+                const { latitude, longitude } = pos.coords;
+                window.currentGPS = { lat: latitude, lon: longitude };
+                gpsStatus.innerText = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                gpsStatus.className = "status-active";
+                gpsButton.innerText = "📍 Tắt GPS";
+                gpsButton.classList.add("btn-active");
+                isGPSActive = true;
+
+                // Đặt marker vị trí user
+                L.marker([latitude, longitude])
+                  .addTo(map)
+                  .bindPopup("📍 Bạn đang ở đây")
+                  .openPopup();
+                map.setView([latitude, longitude], 15);
+              },
+              (err) => {
+                window.currentGPS = null;
+                gpsStatus.innerText = "Lỗi: " + err.message;
+                gpsStatus.className = "status-inactive";
+              },
+              { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
+            );
+          } else {
+            gpsStatus.innerText = "GPS không hỗ trợ";
+            gpsStatus.className = "status-inactive";
+          }
+        } else {
+          if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+          window.currentGPS = null;
+          gpsStatus.innerText = "Đã tắt";
+          gpsStatus.className = "status-inactive";
+          gpsButton.innerText = "📍 Bật GPS";
+          gpsButton.classList.remove("btn-active");
+          isGPSActive = false;
+        }
+      }
+    </script>
   </body>
 </html>

@@ -35,4 +35,8 @@ urlpatterns = [
     # xóa tài khoản:
     path('delete_account/', views.delete_account, name='delete_account'),
     
+    #Map hiện ổ gà
+    path("api/potholes/", views.pothole_data, name="pothole_data"),
+
+    
 ]

@@ -43,8 +43,8 @@ class Pothole(models.Model):
     confidence_avg = models.FloatField(default=0)   # trung bình độ tin cậy từ các phát hiện
     detections_count = models.PositiveIntegerField(default=1)  # tổng số lần phát hiện
 
-    # def __str__(self):
-    #     return f"Pothole {self.id} - {self.status}"
+    def __str__(self):
+        return f"Pothole {self.id} - {self.status}"
 
 
 class PotholeDetection(models.Model):
