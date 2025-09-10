@@ -406,13 +406,11 @@ def draw_boxes(frame, results, conf_thres=0.25):
 
     return frame
 
-
-
-
 # ================== IMAGE DETECTION ==================
 @csrf_exempt
 def detect_image(request):
     if request.method == "POST" and request.FILES.get("image"):
+        logger.debug("hello")
         img = cv2.imdecode(np.frombuffer(request.FILES["image"].read(), np.uint8), cv2.IMREAD_COLOR)
         resized = cv2.resize(img, (640, 640))
         input_image = resized[:, :, ::-1].transpose(2, 0, 1)  # HWC->CHW, BGR->RGB
@@ -428,4 +426,38 @@ def detect_image(request):
         return JsonResponse({"image": buffer.tobytes().hex()})
     return JsonResponse({"error": "No image uploaded"})
 
+# Cấu hình Roboflow
+ROBOFLOW_API_KEY = "rf_d8yBoanGX6bkEsX9Ex8ITPJwhcn2"
+ROBOFLOW_WORKSPACE = "vilan-qvsdh"
+ROBOFLOW_PROJECT = "pothole-detection-qaqag"
+ROBOFLOW_VERSION = 1
+
+def model_training(request):
+    code_snippet = None
+    uploaded_files = []
+
+    if request.method == "POST" and request.FILES.getlist("images"):
+        files = request.FILES.getlist("images")
+        save_path = os.path.join(settings.MEDIA_ROOT, "dataset")
+        os.makedirs(save_path, exist_ok=True)
+
+        for f in files:
+            file_path = os.path.join(save_path, f.name)
+            with open(file_path, "wb+") as dest:
+                for chunk in f.chunks():
+                    dest.write(chunk)
+            uploaded_files.append(f.name)
+
+        # Tạo đoạn code Colab sẵn sàng
+        code_snippet = f"""!pip install roboflow
+                            from roboflow import Roboflow
+                            rf = Roboflow(api_key="{ROBOFLOW_API_KEY}")
+                            project = rf.workspace("{ROBOFLOW_WORKSPACE}").project("{ROBOFLOW_PROJECT}")
+                            dataset = project.version({ROBOFLOW_VERSION}).download("yolov11")
+                            """
+
+    return render(request, "my_app/model_training.html", {
+        "uploaded_files": uploaded_files,
+        "code_snippet": code_snippet
+    })
 

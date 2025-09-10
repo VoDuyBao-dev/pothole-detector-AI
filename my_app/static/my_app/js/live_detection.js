@@ -183,76 +183,76 @@ async function captureAndSendWS() {
 }
 
 
-    // === Camera Toggle ===
-    async function toggleCamera() {
-        const cameraButton = document.getElementById('cameraToggle')
-        const cameraStatus = document.getElementById('camera-status')
+// === Camera Toggle ===
+async function toggleCamera() {
+    const cameraButton = document.getElementById('cameraToggle')
+    const cameraStatus = document.getElementById('camera-status')
 
-        if (!isCameraActive) {
-            try {
-                // mở camera
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment', width: { ideal: 640 } },
-                    audio: false
-                })
-                video.srcObject = stream
-                isCameraActive = true
-                cameraStatus.innerText = 'Đang bật'
-                cameraStatus.className = 'status-active'
-                cameraButton.innerText = '📷 Tắt Camera'
-                cameraButton.classList.add('btn-active')
+    if (!isCameraActive) {
+        try {
+            // mở camera
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 640 } },
+                audio: false
+            })
+            video.srcObject = stream
+            isCameraActive = true
+            cameraStatus.innerText = 'Đang bật'
+            cameraStatus.className = 'status-active'
+            cameraButton.innerText = '📷 Tắt Camera'
+            cameraButton.classList.add('btn-active')
 
-                // 🔑 chỉ mở WebSocket khi bật camera
-                await connectWS()
+            // 🔑 chỉ mở WebSocket khi bật camera
+            await connectWS()
 
-                // bắt đầu gửi frame định kỳ
-                sendIntervalId = setInterval(captureAndSendWS, 200)
+            // bắt đầu gửi frame định kỳ
+            sendIntervalId = setInterval(captureAndSendWS, 200)
 
-            } catch (err) {
-                console.error("Không mở được camera", err)
-                cameraStatus.innerText = 'Không mở được camera'
-                cameraStatus.className = 'status-inactive'
-            }
-        } else {
-            // dừng gửi frame
-            if (sendIntervalId) clearInterval(sendIntervalId)
-
-            // tắt camera
-            if (stream) stream.getTracks().forEach((t) => t.stop())
-            video.srcObject = null
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
-            isCameraActive = false
-            cameraStatus.innerText = 'Chưa bật'
+        } catch (err) {
+            console.error("Không mở được camera", err)
+            cameraStatus.innerText = 'Không mở được camera'
             cameraStatus.className = 'status-inactive'
-            cameraButton.innerText = '📷 Bật Camera'
-            cameraButton.classList.remove('btn-active')
+        }
+    } else {
+        // dừng gửi frame
+        if (sendIntervalId) clearInterval(sendIntervalId)
 
-            // reset info
-            document.getElementById('pothole-count').innerText = '0'
-            document.getElementById('confidence').innerText = '-'
-            document.getElementById('area').innerText = '-'
-            document.getElementById('size').innerText = '-'
-            document.getElementById('level').innerText = '-'
+        // tắt camera
+        if (stream) stream.getTracks().forEach((t) => t.stop())
+        video.srcObject = null
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        isCameraActive = false
+        cameraStatus.innerText = 'Chưa bật'
+        cameraStatus.className = 'status-inactive'
+        cameraButton.innerText = '📷 Bật Camera'
+        cameraButton.classList.remove('btn-active')
 
-            // 🔑 đóng WebSocket khi tắt camera
-            if (ws) {
-                ws.close()
-                ws = null
-            }
+        // reset info
+        document.getElementById('pothole-count').innerText = '0'
+        document.getElementById('confidence').innerText = '-'
+        document.getElementById('area').innerText = '-'
+        document.getElementById('size').innerText = '-'
+        document.getElementById('level').innerText = '-'
+
+        // 🔑 đóng WebSocket khi tắt camera
+        if (ws) {
+            ws.close()
+            ws = null
         }
     }
+}
 
 
 
-    // Cleanup
-    window.addEventListener('beforeunload', () => {
-        if (isGPSActive && gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId)
-        if (isCameraActive) {
-            if (sendIntervalId) {
-                clearInterval(sendIntervalId)
-                sendIntervalId = null
-            }
-            if (stream) stream.getTracks().forEach((t) => t.stop())
-            if (ws) ws.close()
+// Cleanup
+window.addEventListener('beforeunload', () => {
+    if (isGPSActive && gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId)
+    if (isCameraActive) {
+        if (sendIntervalId) {
+            clearInterval(sendIntervalId)
+            sendIntervalId = null
         }
-    })
+        if (stream) stream.getTracks().forEach((t) => t.stop())
+        if (ws) ws.close()
+    }
+})

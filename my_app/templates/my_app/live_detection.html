@@ -84,5 +84,8 @@
     {% endif %}
 
     <script src="{% static 'my_app/js/live_detection.js' %}"></script>
+    <script>
+      const detect_image = "{% url 'detect_image' %}" 
+    </script>
   </body>
 </html>
