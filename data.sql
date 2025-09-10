@@ -3,6 +3,7 @@ create database pothole_detector_ai;
 use pothole_detector_ai;
 
 
+
 -- Thêm 10 user vào auth_user
 INSERT INTO auth_user(username, password, email, first_name, last_name, is_staff, is_superuser, is_active, date_joined)
 VALUES
@@ -32,7 +33,7 @@ VALUES
 (10, 'user', NOW(), NOW(), 0);
 
 
-INSERT INTO my_app_pothole (latitude, longitude, first_detected_by_id, status, confidence_avg, detections_count)
+INSERT INTO my_app_pothole (first_detected_by_id, status, confidence_avg, detections_count)
 VALUES 
 (2, 'active', 0.92, 3),   -- Hà Nội
 (3, 'active', 0.85, 2),   -- TP.HCM
