@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Đăng nhập</title>
+    <link rel="stylesheet" href="{% static 'my_app/css/sign_up_and_sign_in.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="brand" aria-hidden="false">
+        <div class="logo">
+          <div class="logo-badge">PD</div>Pothole Detection
+        </div>
+        <p>Pothole Detection là hệ thống thông minh sử dụng camera và AI để phát hiện, xác định vị trí ổ gà, giúp cơ quan quản lý xử lý kịp thời và hỗ trợ người dân chọn lộ trình an toàn hơn.</p>
+        <div class="features">
+          <p>Đây là công cụ hữu ích cho:</p> <br />
+          <div class="feat">
+            <i>✓</i><div>Cơ quan quản lý giao thông</div>
+          </div>
+          <div class="feat">
+            <i>✓</i><div>Người dân muốn báo cáo ổ gà</div>
+          </div>
+        </div>
+      </aside>
+    <main class="card" role="region" aria-label="Khu vực biểu mẫu xác thực">
+      {% comment %} <div class="tab" role="tab" id="tab-login" aria-controls="panel-login" aria-selected="true">Đăng nhập</div> {% endcomment %}
+
+      <!-- Panel Đăng nhập -->
+      <section id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+        <form id="form-login" method="post" action="{% url 'signin' %}" novalidate>
+          {% csrf_token %}
+
+          <!-- Hiển thị thông báo -->
+          {% if error %}
+            <div class="msg error">{{ error }}</div>
+          {% endif %}
+          {% if success %}
+            <div class="msg success">{{ success }}</div>
+          {% endif %}
+
+          <div class="control">
+            <input id="login-email" type="email" name="email" placeholder=" " autocomplete="Tên đăng nhập" required />
+            <label for="login-email">Tên đăng nhập</label>
+          </div>
+
+          <div class="control">
+            <input id="login-password" type="password" name="password" placeholder=" " minlength="1" required />
+            <label for="login-password">Mật khẩu</label>
+            <button class="icon" type="button" aria-label="Hiện/ẩn mật khẩu" data-toggle="password" data-target="#login-password">👁️</button>
+          </div>
+
+          <div class="meta">
+            <label><input type="checkbox" name="remember" />Ghi nhớ tôi</label>
+            <a href="#" onclick="toast('Tính năng khôi phục mật khẩu đang demo')">Quên mật khẩu?</a>
+          </div>
+
+          <button class="btn" type="submit">Đăng nhập</button>
+        </form>
+      </section>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="{% static 'my_app/js/sign_up_and_sign_in.js' %}"></script>
+
+  </body>
+</html>

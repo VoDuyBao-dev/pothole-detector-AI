@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bản đồ ổ gà</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="{% static 'my_app/css/map.css' %}" />
+    <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
+  </head>
+  <body data-theme="light">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      {% include 'my_app/menu.html' %}
+    </aside>
+
+    <!-- Map -->
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <script>
+      var map = L.map('map').setView([10.762622, 106.660172], 13); // vị trí mặc định (TP.HCM)
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Prepare pothole data as JSON
+      var potholes = [
+        {% for pothole in potholes %}
+          {
+            id: {{ pothole.id }},
+            latitude: {{ pothole.latitude }},
+            longitude: {{ pothole.longitude }},
+            detections_count: {{ pothole.detections_count }},
+            confidence_avg: {{ pothole.confidence_avg|floatformat:2 }}
+          }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ];
+
+      {% if highlighted %}
+        var highlighted = {
+          id: {{ highlighted.id }},
+          latitude: {{ highlighted.latitude }},
+          longitude: {{ highlighted.longitude }}
+        };
+      {% else %}
+        var highlighted = null;
+      {% endif %}
+
+      potholes.forEach(function(pothole) {
+        var color = 'green';
+        var radius = 5;
+        if (highlighted && pothole.id === highlighted.id) {
+          color = 'blue';
+          radius = 10;
+        } else if (pothole.detections_count > 3) {
+          color = 'red';
+        }
+        if (!highlighted || pothole.id !== highlighted.id) {
+          if (pothole.confidence_avg > 0.7) {
+            radius = 8;
+          }
+        }
+        var marker = L.circleMarker([pothole.latitude, pothole.longitude], {
+          color: color,
+          radius: radius
+        }).addTo(map);
+
+        marker.bindPopup("Ổ gà ID: " + pothole.id + "<br>Phát hiện: " + pothole.detections_count + " lần <br> Độ tin cậy TB: " + pothole.confidence_avg + "%");
+      });
+
+      if (highlighted) {
+        map.setView([highlighted.latitude, highlighted.longitude], 16);
+      }
+    </script>
+  </body>
+</html>

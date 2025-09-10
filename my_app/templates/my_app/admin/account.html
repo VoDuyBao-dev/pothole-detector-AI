@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý tài khoản</title>
+  <link rel="stylesheet" href="{% static 'my_app/css/admin/account_management.css' %}" />
+  <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />  
+</head>
+<body data-theme="light">
+  <aside class="sidebar">
+    {% include 'my_app/menu.html' %}
+  </aside>
+
+  <main>
+    <h1>Quản lý tài khoản</h1>
+    {% if messages %}
+    <div>
+      {% for message in messages %}
+        <div 
+          class="alert 
+          {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}"
+          role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="add">
+      <button class="btn btn-add" onclick="openAddModal()"> ➕ Thêm tài khoản</button>
+    </div>
+
+    <!-- Modal add -->
+    <div class="modal" id="addModal">
+      <div class="modal-content">
+        <h3>Thêm tài khoản</h3>
+        <form method="post" action="{% url 'register' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="addEmail">Tên đăng nhập</label>
+            <input type="text" class="form-control" id="addEmail" name="username" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required />
+          </div>
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-add">Thêm</button>
+            <button type="button" class="btn" onclick="closeModal()">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Tên</th>
+            <th>Email</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    <button class="btn btn-edit" 
+                            onclick="openEditModal('{{ user.id }}', '{{ user.username }}', '{{ user.email }}')">
+                        Sửa
+                    </button>
+                    <button class="btn btn-delete" 
+                            onclick="openDeleteModal('{{ user.id }}')">
+                        Xóa
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="border border-gray-300 px-4 py-2 text-center">Không có tài khoản nào</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal Edit -->
+    <div class="modal" id="editModal">
+      <div class="modal-content">
+        <h3>Sửa tài khoản</h3>
+        <form method="post" action="{% url 'edit_account' %}">
+          {% csrf_token %}
+          <input type="hidden" id="editId" name="id"/>
+          <div class="form-group">
+            <label for="editUsername">Tên</label>
+            <input type="text" class="form-control" id="editUsername" name="username" required />
+          </div>
+          <div class="form-group">
+            <label for="editEmail">Email</label>
+            <input type="email" class="form-control" id="editEmail" name="email" required />
+          </div>
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-edit">Lưu</button>
+            <button type="button" class="btn" onclick="closeModal()">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Delete -->
+    <div class="modal" id="deleteModal">
+      <div class="modal-content">
+        <h3>Xác nhận xóa</h3>
+        <p>Bạn có chắc chắn muốn xóa tài khoản này?</p>
+        <form method="post" action="{% url 'delete_account' %}">
+          {% csrf_token %}
+          <input type="hidden" id="deleteId" name="id"/>
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-delete">Xóa</button>
+            <button type="button" class="btn" onclick="closeModal()">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function openAddModal() {
+      document.getElementById('addModal').style.display = 'flex';
+    }
+
+    function openEditModal(id, username, email) {
+      // Đảm bảo các phần tử tồn tại trước khi gán giá trị
+      const editId = document.getElementById('editId');
+      const editUsername = document.getElementById('editUsername');
+      const editEmail = document.getElementById('editEmail');
+
+      if (editId && editUsername && editEmail) {
+        editId.value = id;
+        editUsername.value = username;
+        editEmail.value = email;
+        document.getElementById('editModal').style.display = 'flex';
+      } else {
+        console.error('One or more input elements not found');
+      }
+    }
+    
+    function openDeleteModal(id) {
+      const deleteId = document.getElementById('deleteId');
+      if (deleteId) {
+        deleteId.value = id;
+        document.getElementById('deleteModal').style.display = 'flex';
+      } else {
+        console.error('Delete input element not found');
+      }
+    }
+    
+    function closeModal() {
+      document.querySelectorAll('.modal').forEach((modal) => {
+        modal.style.display = 'none';
+      });
+    }
+
+    // Utility functions for querySelector
+    const $ = (sel, ctx = document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+    // Toggle password visibility (if needed in the future)
+    $$('[data-toggle="password"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = $(btn.dataset.target);
+        if (!target) return;
+        const isPwd = target.getAttribute('type') === 'password';
+        target.setAttribute('type', isPwd ? 'text' : 'password');
+        btn.textContent = isPwd ? '🙈' : '👁️';
+      });
+    });
+  </script>
+</body>
+</html>
