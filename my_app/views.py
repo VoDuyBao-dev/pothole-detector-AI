@@ -23,14 +23,6 @@ from django.core.paginator import Paginator
 import logging
 logger = logging.getLogger('my_app')
 
-
- 
-# def account_management(request):
-#     return render(request, 'my_app/admin/account.html')
-
-
-
-
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 # Đăng ký tài khoản mới cho user
@@ -181,14 +173,6 @@ def history(request):
         # Xử lý confidence_avg cho từng item trong trang hiện tại
         for p in potholes:
             p.confidence_avg = p.confidence_avg * 100 if p.confidence_avg else 0
-            # logger.debug(p.confidence_avg)
-        # Lấy thông tin detection của từng pothole
-        # detections = (
-        #     PotholeDetection.objects
-        #     .select_related("user", "pothole")
-        #     .values('latitude', 'longitude')
-        #     .order_by("-detected_at")
-        # 
 
         return render(request, "my_app/history.html", {
             "is_admin": True,
@@ -207,10 +191,10 @@ def history(request):
         detections = paginator.get_page(page_number)
 
         for d in detections:
-            d.confidence_avg = d.confidence_avg * 100 if d.confidence_avg else 0
+            d.pothole.confidence_avg = d.pothole.confidence_avg * 100 if d.pothole.confidence_avg else 0
         return render(request, "my_app/history.html", {
             "is_admin": False,
-            "potholes": detections            # template đang dùng biến 'potholes'
+            "potholes": detections        # template đang dùng biến 'potholes'
         })
 
 
@@ -461,23 +445,22 @@ def draw_boxes(request, frame, results, user=None, gps=None):
         label = f"{results.names[cls]} {conf:.2f}"
 
         # Điều chỉnh độ dày viền và font chữ
-        line_thickness = 1      # Độ dày viền box
-        font_scale = 0.20   # Giảm cỡ chữ từ 0.4 xuống 0.35
+        line_thickness = 1    # Độ dày viền box
+        font_scale = 0.3  # Giảm cỡ chữ 
         font = cv2.FONT_HERSHEY_SIMPLEX
         text_thickness = 1      # Độ dày của chữ
         
         # Tính toán kích thước text để vẽ nền
         (text_width, text_height), baseline = cv2.getTextSize(
-            label, 
-            font, 
-            font_scale, 
-            text_thickness
+            label, font, font_scale, text_thickness
         )
+         # Vị trí text
+        text_x, text_y = x1, max(y1 - 4, text_height + 4)
         
-        # Vẽ nền đen cho text để tăng độ tương phản
+        # Vẽ nền đen mờ cho text để tăng độ tương phản
         cv2.rectangle(frame, 
-                     (x1, y1 - text_height - baseline - 2),
-                     (x1 + text_width, y1),
+                     (text_x, text_y - text_height - baseline),
+                     (text_x + text_width, text_y + baseline),
                      (0, 0, 0),
                      -1)  # -1 để fill màu
         
@@ -487,7 +470,7 @@ def draw_boxes(request, frame, results, user=None, gps=None):
         # Vẽ text với anti-aliasing
         cv2.putText(frame, 
                    label,
-                   (x1, y1 - 2),
+                   (text_x, text_y),
                    font,
                    font_scale,
                    (255, 255, 255),     # Màu chữ trắng
@@ -495,8 +478,8 @@ def draw_boxes(request, frame, results, user=None, gps=None):
                    cv2.LINE_AA)         # Anti-aliasing để làm mịn chữ
 
         # Tính area (diện tích bbox)
-        area = (x2 - x1) * (y2 - y1)
-        size = "large" if area > 5000 else "small"
+        # area = (x2 - x1) * (y2 - y1)
+        # size = "large" if area > 5000 else "small"
 
     return frame
 
@@ -506,7 +489,6 @@ def detect_image(request):
     if request.method == "POST" and request.FILES.get("image"):
         img = cv2.imdecode(np.frombuffer(request.FILES["image"].read(), np.uint8), cv2.IMREAD_COLOR)
         results = model(img, imgsz=960, conf=0.25)
-
         gps = request.POST.get("gps")
         gps = tuple(map(float, gps.split(","))) if gps else None
 
