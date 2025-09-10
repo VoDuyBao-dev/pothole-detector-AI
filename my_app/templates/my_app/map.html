@@ -58,6 +58,7 @@
       // GPS toggle
       let isGPSActive = false;
       let gpsWatchId = null;
+      let userMarker = null;   // giữ marker của user
       window.currentGPS = null;
 
       function toggleGPS() {
@@ -76,12 +77,17 @@
                 gpsButton.classList.add("btn-active");
                 isGPSActive = true;
 
-                // Đặt marker vị trí user
-                L.marker([latitude, longitude])
-                  .addTo(map)
-                  .bindPopup("📍 Bạn đang ở đây")
-                  .openPopup();
-                map.setView([latitude, longitude], 15);
+                // Nếu marker chưa có -> tạo mới
+                if (!userMarker) {
+                  userMarker = L.marker([latitude, longitude], {
+                    title: "Vị trí của bạn",
+                  }).addTo(map).bindPopup("📍 Bạn đang ở đây");
+                  // chỉ setView lần đầu
+                  map.setView([latitude, longitude], 15);
+                } else {
+                  // nếu đã có marker -> cập nhật vị trí
+                  userMarker.setLatLng([latitude, longitude]);
+                }
               },
               (err) => {
                 window.currentGPS = null;
@@ -95,6 +101,7 @@
             gpsStatus.className = "status-inactive";
           }
         } else {
+          // Tắt GPS
           if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
           window.currentGPS = null;
           gpsStatus.innerText = "Đã tắt";
@@ -102,6 +109,12 @@
           gpsButton.innerText = "📍 Bật GPS";
           gpsButton.classList.remove("btn-active");
           isGPSActive = false;
+
+          // Xóa marker khỏi map
+          if (userMarker) {
+            map.removeLayer(userMarker);
+            userMarker = null;
+          }
         }
       }
     </script>
