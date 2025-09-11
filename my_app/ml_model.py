@@ -53,6 +53,43 @@ def nms(boxes, iou_thres=0.45):
 
     return keep
 
+def draw_boxes(frame, detections, conf_thres=0.25):
+
+    for det in detections:
+        conf = det["confidence"] * 100
+        if conf < conf_thres:
+            continue
+
+        x1, y1 = int(det["x"]), int(det["y"])
+        x2, y2 = int(x1 + det["width"]), int(y1 + det["height"])
+
+
+        # Vẽ bounding box
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 150, 0), 1)
+
+        # Chuẩn bị text label
+        label = f"{det['label']} {conf:.2f}%"
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.3
+        font_thickness = 1
+
+        # Tính kích thước text
+        (text_w, text_h), baseline = cv2.getTextSize(label, font, font_scale, font_thickness)
+        text_x = x1
+        text_y = max(y1 - 4, text_h + 4)  # để text không bị tràn ra ngoài
+
+        # Vẽ text
+        cv2.putText(frame,
+                    label,
+                    (text_x, text_y),
+                    font,
+                    font_scale,
+                    (255, 255, 255),
+                    font_thickness,
+                    cv2.LINE_AA)
+
+    return frame
+
 # ================== HÀM CHẠY INFERENCE ==================
 def run_inference(frame, conf_thres=0.25, iou_thres=0.45):
     compiled_model, input_layer, output_layer = get_model()

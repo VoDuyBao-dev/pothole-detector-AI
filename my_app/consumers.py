@@ -1,10 +1,11 @@
 # app/consumers.py
 import base64, cv2, numpy as np, json, math
 from channels.generic.websocket import AsyncWebsocketConsumer
+import os
 from django.utils import timezone
 from django.contrib import messages
 from .models import Pothole, PotholeDetection
-from .ml_model import run_inference  # ✅ gọi hàm từ file ml_model.py
+from .ml_model import run_inference, draw_boxes  # ✅ gọi hàm từ file ml_model.py
 import logging
 logger = logging.getLogger('my_app')
 
@@ -83,6 +84,20 @@ def get_or_create_pothole(user, lat, lon, confidence, size, area, level):
 
     return nearby
 
+def save_pothole_image(frame, detections, save_dir="media/potholes"):
+    os.makedirs(save_dir, exist_ok=True)
+
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"pothole_{timestamp}.jpg"
+    filepath = os.path.join(save_dir, filename)
+
+    # Vẽ bounding boxes lên frame
+    frame_with_boxes = draw_boxes(frame.copy(), detections, conf_thres=0.25)
+
+    # Lưu file
+    cv2.imwrite(filepath, frame_with_boxes)
+
+    return filepath, frame_with_boxes
 
 # ================== WEBSOCKET CONSUMER ==================
 # AsyncWebsocketConsumer: class Django Channels để giao tiếp WebSocket.
@@ -133,13 +148,24 @@ class DetectionConsumer(AsyncWebsocketConsumer):
                 logger.warning("Không có GPS → chỉ trả về kết quả detection")
 
             # Trả kết quả về client
+            # Vẽ và lưu ảnh
+            img_path, frame_with_boxes = save_pothole_image(frame, detections)
+
+            # Encode thành base64 để gửi về client
+            _, buffer = cv2.imencode(".jpg", frame_with_boxes)
+            frame_base64 = base64.b64encode(buffer).decode("utf-8")
+
+            # Trả kết quả về client
             response = {
                 "detections": detections,
                 "pothole_count": pothole_count,
                 "confidence_TB": round(float(detections[pothole_count-1]["confidence_TB"]), 4) if detections else 0,
+                "image": frame_base64,      # ảnh đã vẽ box
+                "image_path": img_path,     # đường dẫn ảnh đã lưu
                 "timestamp": timezone.now().isoformat()
             }
             await self.send(text_data=json.dumps(response))
+
 
         except Exception as e:
             logger.error(f"Lỗi trong DetectionConsumer: {str(e)}")

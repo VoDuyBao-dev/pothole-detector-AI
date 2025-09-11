@@ -6,7 +6,7 @@ from django.http import  JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from .models import * 
-from .ml_model import run_inference
+from .ml_model import run_inference, draw_boxes
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
@@ -253,43 +253,6 @@ def live_detection(request):
     return render(request, "my_app/live_detection.html")
 
 
-def draw_boxes(frame, detections, conf_thres=0.25):
-
-    for det in detections:
-        conf = det["confidence"]
-        if conf < conf_thres:
-            continue
-
-        x1, y1 = int(det["x"]), int(det["y"])
-        x2, y2 = int(x1 + det["width"]), int(y1 + det["height"])
-
-
-        # Vẽ bounding box
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 150, 0), 1)
-
-        # Chuẩn bị text label
-        label = f"{det['label']} {conf:.2f}"
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 0.3
-        font_thickness = 1
-
-        # Tính kích thước text
-        (text_w, text_h), baseline = cv2.getTextSize(label, font, font_scale, font_thickness)
-        text_x = x1
-        text_y = max(y1 - 4, text_h + 4)  # để text không bị tràn ra ngoài
-
-        # Vẽ text
-        cv2.putText(frame,
-                    label,
-                    (text_x, text_y),
-                    font,
-                    font_scale,
-                    (255, 255, 255),
-                    font_thickness,
-                    cv2.LINE_AA)
-
-    return frame
-
 # ================== IMAGE DETECTION ==================
 @csrf_exempt
 def detect_image(request):
@@ -302,7 +265,9 @@ def detect_image(request):
 
         # Gọi inference chung
         detections = run_inference(img)
+        pothole_count = len(detections) or 0 
         logger.debug(f"có bao nhiêu ổ gà trong ảnh: {detections}")
+
         # Vẽ bounding boxes
         img = draw_boxes(img, detections, conf_thres=0.25)
 
@@ -310,7 +275,25 @@ def detect_image(request):
         _, buffer = cv2.imencode(".jpg", img)
         img_base64 = base64.b64encode(buffer).decode("utf-8")
 
-        return JsonResponse({"image": img_base64})
+        safe_detections = []
+        for d in detections:
+            safe_detections.append({
+                "x": int(d.get("x", 0)),
+                "y": int(d.get("y", 0)),
+                "width": int(d.get("width", 0)),
+                "height": int(d.get("height", 0)),
+                "confidence": float(d.get("confidence", 0)),
+                "label": d.get("label", ""),
+                "area": int(d.get("area", 0)),
+                "size": d.get("size", ""),
+                "level": d.get("level", "")
+            })
+
+        return JsonResponse({
+            "image": img_base64,
+            "detections": safe_detections,
+            "confidence_TB": round(float(detections[pothole_count-1]["confidence_TB"]), 4) if detections else 0
+        })
 
     return JsonResponse({"error": "No image uploaded"})
 

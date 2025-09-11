@@ -36,3 +36,4 @@ application = ProtocolTypeRouter({
 
 
 # uvicorn pothole_detection.asgi:application --reload --port 8000
+

@@ -39,9 +39,21 @@ document.getElementById("uploadForm").addEventListener("submit", async function 
             const resultDiv = document.getElementById("result");
             resultDiv.innerHTML = ""; // clear trước đó
             resultDiv.appendChild(imgElement);
+        } 
+        // Nếu có dữ liệu ổ gà
+        if (data.detections) {
+            const detections = data.detections;
+            const count = detections.length;
+            // const avgConfidence = (detections.reduce((sum, d) => sum + d.confidence, 0) / count).toFixed(2);
+            // const avgConfidence = round(float(detections[count-1]["confidence_TB"]), 2) 
+            const avgConfidence = (data.confidence_TB * 100).toFixed(2);
+            // cập nhật vào giao diện
+            document.getElementById("pothole-count").textContent = count;
+            document.getElementById("confidence").textContent = avgConfidence;
         } else if (data.error) {
             alert("Error: " + data.error);
         }
+
     } catch (err) {
         console.error("Upload error:", err);
         alert("Có lỗi khi upload ảnh.");
@@ -131,37 +143,20 @@ function connectWS() {
                     document.getElementById('pothole-count').innerText = data.pothole_count
                     document.getElementById('confidence').innerText = (data.confidence_TB * 100).toFixed(2)
 
+                    // Hiển thị ảnh đã vẽ box từ server
+                    const imgElement = document.getElementById("pothole-frame") || document.createElement("img")
+                    imgElement.id = "pothole-frame"
+                    imgElement.src = "data:image/jpeg;base64," + data.image
+                    imgElement.style.maxWidth = "100%"
+                    
+                    const resultDiv = document.getElementById("result")
+                    resultDiv.innerHTML = ""
+                    resultDiv.appendChild(imgElement)
+
                 } else {
                     document.getElementById('pothole-count').innerText = '0'
                     document.getElementById('confidence').innerText = '-'
                 }
-
-                console.log("Canvas size:", canvas.width, canvas.height)
-                console.log("Video size:", video.videoWidth, video.videoHeight)
-
-
-                // Scale nếu canvas ≠ video gốc
-                const scaleX =  video.videoWidth
-                const scaleY = video.videoHeight
-
-                // Vẽ bounding boxes
-                (data.detections || []).forEach(det => {
-                    console.log("Box:", det.x, det.y, det.width, det.height)
-                    
-                    ctx.beginPath()
-                    ctx.lineWidth = 2
-                    ctx.strokeStyle = 'blue'
-                    ctx.rect(det.x * scaleX, det.y * scaleY, det.width * scaleX, det.height * scaleY)
-                    ctx.stroke()
-
-                    ctx.fillStyle = 'green'
-                    ctx.font = '14px Arial'
-                    ctx.fillText(
-                        `${det.label} ${(det.confidence * 100).toFixed(1)}%`,
-                        det.x * scaleX,
-                        det.y * scaleY > 20 ? det.y * scaleY - 5 : 10
-                    )
-                })
             } catch (err) {
                 console.error("WS parse error:", err)
             }
