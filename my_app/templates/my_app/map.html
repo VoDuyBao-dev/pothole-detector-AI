@@ -19,63 +19,103 @@
       <div id="map"></div>
     </div>
 
+    <!-- GPS Info -->
+    <div class="info-item">
+      GPS: <span id="gps-status">Chưa bật</span>
+      <button class="btn btn-gps" id="gpsToggle" onclick="toggleGPS()">📍 Bật GPS</button>
+    </div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
     <script>
-      var map = L.map('map').setView([10.762622, 106.660172], 13); // vị trí mặc định (TP.HCM)
+      var map = L.map("map").setView([10.762622, 106.660172], 13); // default TP.HCM
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
       }).addTo(map);
 
-      // Prepare pothole data as JSON
-      var potholes = [
-        {% for pothole in potholes %}
+      {% for pothole in potholes %}
+        var color = "{{ pothole.level }}" === "large" ? "red" : "blue";
+        var marker = L.circleMarker(
+          [{{ pothole.latitude }}, {{ pothole.longitude }}],
           {
-            id: {{ pothole.id }},
-            latitude: {{ pothole.latitude }},
-            longitude: {{ pothole.longitude }},
-            detections_count: {{ pothole.detections_count }},
-            confidence_avg: {{ pothole.confidence_avg|floatformat:2 }}
-          }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-      ];
+            color: color,
+            radius: 8,
+            fillOpacity: 0.8,
+          }
+        ).addTo(map);
 
-      {% if highlighted %}
-        var highlighted = {
-          id: {{ highlighted.id }},
-          latitude: {{ highlighted.latitude }},
-          longitude: {{ highlighted.longitude }}
-        };
-      {% else %}
-        var highlighted = null;
-      {% endif %}
+        marker.bindPopup(`
+          <b>Ổ gà #{{ pothole.id }}</b><br>
+          Loại: {{ pothole.level }}<br>
+          Người phát hiện đầu tiên: {{ pothole.user }}<br>
+          Confidence TB: {{ pothole.confidence_avg|floatformat:2 }}<br>
+          Số lần phát hiện: {{ pothole.detections_count }}<br>
+          Thời gian: {{ pothole.detected_at }}
+        `);
+      {% endfor %}
 
-      potholes.forEach(function(pothole) {
-        var color = 'green';
-        var radius = 5;
-        if (highlighted && pothole.id === highlighted.id) {
-          color = 'blue';
-          radius = 10;
-        } else if (pothole.detections_count > 3) {
-          color = 'red';
-        }
-        if (!highlighted || pothole.id !== highlighted.id) {
-          if (pothole.confidence_avg > 0.7) {
-            radius = 8;
+      // GPS toggle
+      let isGPSActive = false;
+      let gpsWatchId = null;
+      let userMarker = null;   // giữ marker của user
+      window.currentGPS = null;
+
+      function toggleGPS() {
+        const gpsButton = document.getElementById("gpsToggle");
+        const gpsStatus = document.getElementById("gps-status");
+
+        if (!isGPSActive) {
+          if (navigator.geolocation) {
+            gpsWatchId = navigator.geolocation.watchPosition(
+              (pos) => {
+                const { latitude, longitude } = pos.coords;
+                window.currentGPS = { lat: latitude, lon: longitude };
+                gpsStatus.innerText = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                gpsStatus.className = "status-active";
+                gpsButton.innerText = "📍 Tắt GPS";
+                gpsButton.classList.add("btn-active");
+                isGPSActive = true;
+
+                // Nếu marker chưa có -> tạo mới
+                if (!userMarker) {
+                  userMarker = L.marker([latitude, longitude], {
+                    title: "Vị trí của bạn",
+                  }).addTo(map).bindPopup("📍 Bạn đang ở đây");
+                  // chỉ setView lần đầu
+                  map.setView([latitude, longitude], 15);
+                } else {
+                  // nếu đã có marker -> cập nhật vị trí
+                  userMarker.setLatLng([latitude, longitude]);
+                }
+              },
+              (err) => {
+                window.currentGPS = null;
+                gpsStatus.innerText = "Lỗi: " + err.message;
+                gpsStatus.className = "status-inactive";
+              },
+              { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
+            );
+          } else {
+            gpsStatus.innerText = "GPS không hỗ trợ";
+            gpsStatus.className = "status-inactive";
+          }
+        } else {
+          // Tắt GPS
+          if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+          window.currentGPS = null;
+          gpsStatus.innerText = "Đã tắt";
+          gpsStatus.className = "status-inactive";
+          gpsButton.innerText = "📍 Bật GPS";
+          gpsButton.classList.remove("btn-active");
+          isGPSActive = false;
+
+          // Xóa marker khỏi map
+          if (userMarker) {
+            map.removeLayer(userMarker);
+            userMarker = null;
           }
         }
-        var marker = L.circleMarker([pothole.latitude, pothole.longitude], {
-          color: color,
-          radius: radius
-        }).addTo(map);
-
-        marker.bindPopup("Ổ gà ID: " + pothole.id + "<br>Phát hiện: " + pothole.detections_count + " lần <br> Độ tin cậy TB: " + pothole.confidence_avg + "%");
-      });
-
-      if (highlighted) {
-        map.setView([highlighted.latitude, highlighted.longitude], 16);
       }
     </script>
   </body>

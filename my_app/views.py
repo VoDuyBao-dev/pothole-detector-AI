@@ -14,6 +14,7 @@ from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
+from django.db.models import Min
 
 import logging
 logger = logging.getLogger('my_app')
@@ -216,18 +217,41 @@ def pothole_detail(request, pothole_id):
     # fallback render page
     return render(request, "my_app/history.html", {"pothole": pothole})
 
+@login_required
 def map(request):
-    pothole_id = request.GET.get("pothole_id")
-    highlighted = None
+    """
+    Trang bản đồ hiển thị ổ gà.
+    - Chỉ hiển thị lần phát hiện đầu tiên của mỗi ổ gà
+    - Màu đỏ nếu lớn, màu xanh nếu nhỏ
+    - Popup hiển thị thông tin cơ bản
+    """
+    # Lấy thời gian phát hiện đầu tiên cho mỗi ổ gà
+    first_times = (
+        PotholeDetection.objects
+        .values("pothole_id")
+        .annotate(first_time=Min("detected_at"))
+    )
 
-    if pothole_id:
-        highlighted = get_object_or_404(Pothole, id=pothole_id)
+    potholes = []
+    for f in first_times:
+        d = PotholeDetection.objects.filter(
+            pothole_id=f["pothole_id"],
+            detected_at=f["first_time"]
+        ).select_related("pothole", "user").first()
+        if d:
+            potholes.append({
+                "id": d.pothole.id,
+                "latitude": d.latitude,
+                "longitude": d.longitude,
+                "level": d.level,  # small / large
+                "detections_count": d.pothole.detections_count,
+                "confidence_avg": d.pothole.confidence_avg,
+                "user": d.user.username,
+                "detected_at": d.detected_at.strftime("%d/%m/%Y %H:%M"),
+            })
 
-    potholes = Pothole.objects.all()
-    return render(request, "my_app/map.html", {
-        "potholes": potholes,
-        "highlighted": highlighted
-    })
+    return render(request, "my_app/map.html", {"potholes": potholes})
+
 
 
 
@@ -331,4 +355,9 @@ def model_training(request):
         "uploaded_files": uploaded_files,
         "code_snippet": code_snippet
     })
-
+from django.views.decorators.http import require_GET
+@require_GET
+def pothole_data(request):
+    """API trả về danh sách ổ gà (tọa độ + mức độ)"""
+    detections = PotholeDetection.objects.values("latitude", "longitude", "level")
+    return JsonResponse(list(detections), safe=False)
