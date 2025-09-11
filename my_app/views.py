@@ -19,6 +19,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login, logout 
 from django.core.paginator import Paginator
+from django.utils.timezone import now
+from django.db.models import Avg
+from django.db.models import Count
+from django.db.models.functions import ExtractHour
 
 import logging
 logger = logging.getLogger('my_app')
@@ -51,10 +55,7 @@ def register_view(request):
         return redirect('account_list')
     return redirect('account_list')
 
-@login_required
 
-def dashboard(request):
-    return render(request, 'my_app/index.html')
 
 
 def live_detection(request):
@@ -141,6 +142,49 @@ def delete_account(request):
             messages.error(request, 'Tài khoản không tồn tại!')
         return redirect('account_list')
     return redirect('account_list')
+
+# Trang dashboard
+@login_required
+def dashboard_view(request):
+    today = now()
+
+    detections = (
+        PotholeDetection.objects
+        .filter(detected_at__date=today.date())
+        .annotate(hour=ExtractHour("detected_at"))
+        .values("hour")
+        .annotate(count=Count("id"))
+        .order_by("hour")
+    )
+
+    labels = [d["hour"] for d in detections]
+    values = [d["count"] for d in detections]
+
+    # 1. Số ổ gà tháng này
+    pothole_this_month = PotholeDetection.objects.filter(
+        detected_at__month=today.month,
+        detected_at__year=today.year
+        ).count()
+    
+    # 3. Độ chính xác (ví dụ hardcode hoặc lấy từ model khác)
+    avg_confidence  = PotholeDetection.objects.aggregate(avg=Avg('confidence'))['avg']
+    if avg_confidence is not None:
+        accuracy = round(avg_confidence * 100, 2)  # Chuyển thành phần trăm và làm tròn
+    else:
+        accuracy = 0
+
+    # 4. Sự kiện gần đây (10 bản ghi mới nhất)
+    recent_events = PotholeDetection.objects.order_by("-id")[:10]
+
+    
+    context = {
+        "pothole_this_month": pothole_this_month,
+        "accuracy": accuracy,
+        "recent_events": recent_events,
+        "chart_data": json.dumps({"labels": labels, "values": values}),
+    }
+    return render(request, "my_app/index.html", context)
+
 
 
 def map(request):

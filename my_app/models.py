@@ -59,7 +59,7 @@ class PotholeDetection(models.Model):
     area = models.FloatField(null=True, blank=True)       # diện tích của ổ gà 
     detected_at = models.DateTimeField(default=timezone.now)
 
-    def __str__(self):
+    def __str__(self):  
         return f"Detection by {self.user} at {self.detected_at}"
 
 class PotholeImage(models.Model):

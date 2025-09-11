@@ -9,6 +9,7 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard · Pothole AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="{% static 'my_app/css/dashboard.css' %}">
   <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
 </head>
@@ -25,8 +26,8 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
           <div style="color:var(--muted); font-size:12px">Thống kê trong ngày · <span id="today"></span></div>
         </div>
         <div class="actions">
-          <button class="btn" id="themeToggle">Sáng/Tối</button>
-          <button class="btn primary" id="refreshBtn">Làm mới</button>
+          {% comment %} <button class="btn" id="themeToggle">Sáng/Tối</button>
+          <button class="btn primary" id="refreshBtn">Làm mới</button> {% endcomment %}
         </div>
         <div class="actions">
           {% comment %} <button class="btn" id="themeToggle">Sáng/Tối</button> {% endcomment %}
@@ -40,8 +41,8 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
           <div class="card sm-4">
             <div class="stat">
               <div>
-                <div class="label">Số ổ gà (hôm nay)</div>
-                <div class="value" id="kpiPotholes">—</div>
+                <div class="label">Số ổ gà (tháng này)</div>  
+                <div class="value" id="kpiPotholes">{{ pothole_this_month }}</div>
               </div>
               <div class="badge" style="background: rgba(126,234,130,.18)">OK</div>
             </div>
@@ -50,7 +51,7 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
             <div class="stat">
               <div>
                 <div class="label">Camera đang hoạt động</div>
-                <div class="value" id="kpiCameras">—</div>
+                <div class="value" id="kpiCameras">1</div>
               </div>
               <div class="badge" style="background: rgba(116,187,238,.18)">ONLINE</div>
             </div>
@@ -59,20 +60,22 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
             <div class="stat">
               <div>
                 <div class="label">Độ chính xác (ước tính)</div>
-                <div class="value" id="kpiAcc">—%</div>
+                <div class="value" id="kpiAcc">{{accuracy}}%</div>
               </div>
               <div class="badge" style="background: rgba(253,145,253,.18)">Model v1</div>
             </div>
           </div>
 
-          <div class="card sm-6">
+           <div class="card sm-6">
             <h3 style="margin:0 0 8px 0">Biểu đồ số lượng ổ gà</h3>
             <div class="legend"><span class="dot"></span> Số ổ gà theo giờ</div>
             <div class="chartBox">
               <canvas id="chart"></canvas>
             </div>
-          </div>
+          </div> 
+         
 
+        
           <div class="card sm-6">
             <h3 style="margin:0 0 8px 0">Sự kiện gần đây</h3>
             <table class="table" id="eventsTable">
@@ -80,12 +83,29 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
                 <tr>
                   <th>Thời gian</th>
                   <th>Vị trí</th>
-                  <th>Camera</th>
+                  <th>Diện tích</th>
                   <th>Độ tin cậy</th>
                 </tr>
               </thead>
               <tbody>
-                <!-- JS render -->
+                {% for event in recent_events %}
+        <tr>
+          <td>{{ event.detected_at|date:"d/m/Y H:i:s" }}</td>
+          <td>({{ event.latitude }}, {{ event.longitude }})</td>
+          <td>
+            {% if event.area %}
+              {{ event.area }} cm²
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>{{ event.confidence|floatformat:2 }}%</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="4" style="text-align:center">Không có dữ liệu</td>
+        </tr>
+      {% endfor %}
               </tbody>
             </table>
           </div>
@@ -93,8 +113,87 @@ Dashboard với: số ổ gà trong ngày, số camera hoạt động, biểu đ
       </div>
     </section>
   </div>
+<canvas id="chart2"></canvas>
+
+  
 
   <script src="{% static 'my_app/js/dashboard.js' %}"></script>
   <script src="{% static 'my_app/js/sidebar.js' %}"></script>
+  <script>
+    // vẽ bằng chart.js
+// ===== CHART.JS =====
+const ctx = document.getElementById('chart').getContext('2d');
+let potholeChart = null;
+let lastSeries = null;
+
+function drawChart(series) {
+  if (!series) return;
+  lastSeries = series;
+  const { labels, values } = series;
+
+  if (potholeChart) {
+    potholeChart.data.labels = labels.map(h => h + "h");
+    potholeChart.data.datasets[0].data = values;
+    potholeChart.update();
+    return;
+  }
+
+  potholeChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: labels.map(h => h + "h"),
+    datasets: [{
+      label: 'Số ổ gà theo giờ',
+      data: values,
+      backgroundColor: 'rgba(116, 187, 238, 0.8)',   // xanh chính
+      borderColor: 'rgba(116, 187, 238, 1)',
+      borderWidth: 1,
+      borderRadius: 6,     // 🔥 bo tròn góc cột
+      barPercentage: 0.6,  // 🔥 độ rộng cột (nhỏ hơn 1 để có khoảng cách)
+      categoryPercentage: 0.7, // 🔥 spacing giữa các nhóm cột
+      hoverBackgroundColor: 'rgba(116, 187, 238, 1)', // đậm hơn khi hover
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false }, // ẩn legend vì bạn đã có title/legend custom
+      tooltip: {
+        backgroundColor: '#1e293b',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        padding: 10,
+        cornerRadius: 8
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Giờ trong ngày', color: '#475569' },
+        grid: { display: false },  // bỏ grid dọc
+        ticks: { color: '#475569' }
+      },
+      y: {
+        beginAtZero: true,
+        title: { display: true, text: 'Số ổ gà', color: '#475569' },
+        ticks: { stepSize: 1, color: '#475569' },
+        grid: { color: 'rgba(0,0,0,0.05)' } // grid nhẹ
+      }
+    }
+  }
+});
+
+
+}
+
+// Lấy data từ Django (đã convert sang JSON trong context)
+  const chartData = JSON.parse('{{ chart_data|safe }}');
+
+  document.addEventListener('DOMContentLoaded', () => {
+    drawChart(chartData);
+  });
+  
+  </script>
+  
+
 </body>
 </html>

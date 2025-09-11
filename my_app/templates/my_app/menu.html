@@ -30,6 +30,7 @@
         <span>Lịch sử</span>
         <span class="badge">Logs</span>
       </a>
+      {% if request.user.is_superuser %}
       <a href="{% url 'account_list' %}" data-route="account">
         <span aria-hidden="true">👤</span>
         <span>Quản lí tài khoản</span>
@@ -40,6 +41,7 @@
         <span>Huấn luyện</span>
         <span class="badge" style="background: rgba(253,145,253,.18)">Model</span>
       </a>
+      {% endif %}
       <a href="{% url 'signout' %}" data-route="signout">
         <span aria-hidden="true">🚪</span>
         <span>Đăng xuất</span>

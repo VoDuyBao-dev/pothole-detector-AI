@@ -7,12 +7,14 @@ from .views import *
 
 
 urlpatterns = [
+   
     path('signin/', views.signin, name='signin'),
     path('signout/', views.signout, name='signout'),
-    
     # users
-    path('', views.dashboard, name= 'dashboard'),
+     # dashboard
+    path('', views.dashboard_view, name= 'dashboard'),
 
+    
     path("live_detection_page/", views.live_detection_page, name="live_detection_page"),  # trả template
     path("live_detection/", views.live_detection, name="live_detection"),        # POST nhận frame
     
