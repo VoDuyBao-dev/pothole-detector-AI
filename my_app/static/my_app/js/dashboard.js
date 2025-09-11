@@ -2,12 +2,15 @@
 const root = document.documentElement;
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme) root.setAttribute('data-theme', savedTheme);
-document.getElementById('themeToggle').addEventListener('click', () => {
-  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  root.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-  drawChart(lastSeries);
-});
+const themeBtn = document.getElementById('themeToggle');
+if (themeBtn) {
+  themeBtn.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    drawChart(lastSeries);
+  });
+}
 
 // ===== DATE =====
 const d = new Date();
@@ -16,24 +19,27 @@ document.getElementById('today').textContent = `${pad(d.getDate())}/${pad(d.getM
 
 // ===== DUMMY DATA + HOOKS =====
 // Bạn có thể thay thế phần này bằng API Django (fetch('/api/...'))
+// ===== DUMMY DATA + HOOKS =====
+// Dữ liệu tĩnh để test biểu đồ
 function fetchDashboardData() {
-  // Ví dụ dữ liệu theo giờ từ 06h → 21h
-  const hours = Array.from({ length: 16 }, (_, i) => i + 6);
-  const values = hours.map(() => Math.floor(Math.random() * 6));
-  const events = Array.from({ length: 6 }, (_, i) => ({
-    time: `${pad(14 - Math.floor(i / 2))}:${pad((i % 2) * 30)}:${pad(Math.floor(Math.random() * 60))}`,
-    loc: `(${(10.77 + Math.random() * 0.02).toFixed(5)}, ${(106.67 + Math.random() * 0.02).toFixed(5)})`,
-    cam: `CAM-${100 + i}`,
-    conf: (70 + Math.floor(Math.random() * 30)) + '%'
-  }));
+  const hours = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+  const values = [2, 1, 0, 3, 4, 2, 5, 6, 2, 3, 1, 0, 4, 2, 1, 3]; // dữ liệu cố định
+
+  const events = [
+    { time: "08:15:23", loc: "(10.77001, 106.67890)", cam: "CAM-101", conf: "92%" },
+    { time: "10:30:45", loc: "(10.77123, 106.67985)", cam: "CAM-102", conf: "87%" },
+    { time: "14:05:12", loc: "(10.77234, 106.67654)", cam: "CAM-103", conf: "95%" },
+  ];
+
   return Promise.resolve({
-    potholesToday: values.reduce((a, b) => a + b, 0),
-    activeCameras: 12 + Math.floor(Math.random() * 4),
-    acc: (89 + Math.floor(Math.random() * 4)),
+    potholesToday: values.reduce((a, b) => a + b, 0), // tổng ổ gà
+    activeCameras: 14, // số camera hoạt động
+    acc: 91,           // độ chính xác %
     series: { labels: hours, values },
     events
   });
 }
+
 
 // Hooks để bạn cập nhật từ backend
 function updateDashboard({ potholesToday, activeCameras, acc, series, events }) {
@@ -135,6 +141,7 @@ document.getElementById('refreshBtn').addEventListener('click', async () => {
   const data = await fetchDashboardData();
   updateDashboard(data);
 });
+
 
 (async function init() {
   const data = await fetchDashboardData();
