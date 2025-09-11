@@ -110,6 +110,11 @@ body.dark .info-panel {
   color: #000;
 }
 
+.btn-camera {
+  background: var(--accent);
+  color: #000;
+}
+
 .btn-active {
   background: var(--secondary);
 }

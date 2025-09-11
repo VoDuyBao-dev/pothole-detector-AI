@@ -7,7 +7,44 @@
     <title>Lịch sử phát hiện ổ gà</title>
     <link rel="stylesheet" href="{% static 'my_app/css/history.css' %}" />
     <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
+  <style>
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    .pagination a,
+    .pagination span {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #59a7e7ff;
+      border: 1px solid #ddd;
+      transition: all 0.3s ease;
+    }
+
+    .pagination a:hover {
+      background-color: #f0f0f0;
+      color: #042642ff;
+    }
+
+    .pagination .pnow {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1f5077ff;
+      text-decoration: underline;
+      text-align: center;
+      margin: 10px 0;
+    }
+  </style>
+
   </head>
+
   <body data-theme="light">
     <aside class="sidebar">
       {% include 'my_app/menu.html' %}
@@ -21,7 +58,7 @@
         <table class="table table-bordered">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>STT</th>
               <th>Tọa độ</th>
               <th>Người phát hiện đầu tiên</th>
               <th>Số người phát hiện</th>
@@ -33,13 +70,13 @@
           <tbody>
             {% for pothole in potholes %}
               <tr>
-                <td>{{ pothole.id }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td>
                   <a href="{% url 'map' %}?pothole_id={{ pothole.pothole.id }}">Xem trên bản đồ</a>
                 </td>
                 <td>{{ pothole.first_detected_by.username }}</td>
                 <td>{{ pothole.detections_count }}</td>
-                <td>{{ pothole.confidence_avg|floatformat:2 }}%</td>
+                <td>{{ pothole.confidence_avg|floatformat:3 }}%</td>
                 <td>
                   {% if pothole.status == 'active' %}
                     <span class="badge bg-danger">Chưa sửa</span>
@@ -76,7 +113,7 @@
           <tbody>
             {% for d in potholes %}
               <tr>
-                <td>{{ d.id }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td>
                   {% with imgs=d.images.all %}
                     {% if imgs|length %}
@@ -112,6 +149,24 @@
           </tbody>
         </table>
       {% endif %}
+
+      <div class="pagination">
+        {% if potholes.has_previous %}
+          <a href="?page={{ potholes.previous_page_number }}">« Trước</a>
+        {% endif %}
+
+        {% for i in potholes.paginator.page_range %}
+          {% if potholes.number == i %}
+            <span class="pnow">{{ i }}</span>
+          {% else %}
+            <a href="?page={{ i }}">{{ i }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if potholes.has_next %}
+          <a href="?page={{ potholes.next_page_number }}">Sau »</a>
+        {% endif %}
+      </div>
     </main>
 
     <!-- Modal hiển thị danh sách phát hiện -->
@@ -136,65 +191,73 @@
         </table>
       </div>
     </div>
-
-
+    
     <script>
-      const baseURL = "http://127.0.0.1:8000"; 
-      document.addEventListener('DOMContentLoaded', function () {
-        const modal = document.getElementById('detectionsModal')
-        const tbody = document.getElementById('order-details-table-body')
+      const baseURL = "http://127.0.0.1:8000";
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('detectionsModal');
+        const tbody = document.getElementById('order-details-table-body');
 
-        // Gắn sự kiện click vào tất cả button "Xem danh sách"
+        // Xử lý click cho các nút "Xem danh sách"
         document.querySelectorAll(".show-detections-btn").forEach(button => {
-          button.addEventListener('click', function () {
-            const potholeId = this.getAttribute("data-id")
-            const url = this.getAttribute("data-url")   // ✅ lấy URL từ data-url
-            console.log("Pothole ID:", potholeId)
-            console.log("Fetch URL:", url)
+          button.addEventListener('click', async function() {
+            const potholeId = this.getAttribute("data-id");
+            const url = this.getAttribute("data-url");
+            console.log("Pothole ID:", potholeId);
+            console.log("Fetch URL:", url);
 
-            fetch(`${baseURL}${url}`, { headers: { "X-Requested-With": "XMLHttpRequest" } })
-              .then(response => response.json())
-              .then(data => {
-                if (!data || data.length === 0) {
-                  tbody.innerHTML = `<tr><td colspan="8">Không có dữ liệu phát hiện</td></tr>`
-                  return
+            try {
+              const response = await fetch(`${baseURL}${url}`, {
+                headers: { 
+                  "X-Requested-With": "XMLHttpRequest",
+                  'X-CSRFToken': '{{ csrf_token }}'  // Thêm CSRF token
                 }
-                console.log("helllo")
-                tbody.innerHTML = "" // xóa dữ liệu cũ
-                data.forEach(det => {
-                  const tr = document.createElement("tr")
-                  tr.innerHTML = `
-                    <td>${det.pothole_id}</td>
-                    <td><img src="${det.image_url}" alt="ảnh ổ gà" width="80"></td>
+              });
+
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+
+              const data = await response.json();
+
+              // Reset và cập nhật tbody
+              let count = 1;
+              tbody.innerHTML = data.length ? 
+                data.map(det => `
+                  <tr>
+                    <td>${count++}</td>
+                    <td>${det.image_url ? 
+                      `<img src="${det.image_url}" alt="ổ gà" style="width:80px;height:60px;object-fit:cover;">` : 
+                      '<span class="text-muted">Không có ảnh</span>'
+                    }</td>
                     <td>${det.latitude}, ${det.longitude}</td>
-                    <td>${det.area ?? '-'}</td>
+                    <td>${det.area ?? '-'}mm</td>
                     <td>${det.size ?? '-'}</td>
                     <td>${det.level ?? '-'}</td>
                     <td>${(det.confidence * 100).toFixed(1)}%</td>
                     <td>${det.created_at}</td>
-                  `
-                  tbody.appendChild(tr)
-                })
+                  </tr>
+                `).join('') : 
+                '<tr><td colspan="8">Không có dữ liệu phát hiện</td></tr>';
 
-                // mở modal
-                modal.style.display = "flex"
-              })
-              .catch(error => {
-                console.error("Lỗi khi lấy dữ liệu phát hiện:", error)
-                tbody.innerHTML = `<tr><td colspan="8">Lỗi tải dữ liệu</td></tr>`
-              })
-          })
-        })
+              modal.style.display = "flex";
+              
+            } catch (error) {
+              console.error("Lỗi khi lấy dữ liệu phát hiện:", error);
+              tbody.innerHTML = `<tr><td colspan="8">Lỗi tải dữ liệu: ${error.message}</td></tr>`;
+            }
+          });
+        });
 
-        // Đóng modal khi click ra ngoài
-        window.addEventListener('click', function (event) {
+        // Đóng modal khi click outside
+        window.addEventListener('click', function(event) {
           if (event.target === modal) {
-            modal.style.display = 'none'
+            modal.style.display = 'none';
           }
-        })
-      })
+        });
+      });
     </script>
-
   </body>
 </html>
 
