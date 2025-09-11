@@ -13,8 +13,7 @@ urlpatterns = [
     # users
     path('', views.dashboard, name= 'dashboard'),
 
-    path("live_detection_page/", views.live_detection_page, name="live_detection_page"),  # trả template
-    path("live_detection/", views.live_detection, name="live_detection"),        # POST nhận frame
+    path("live_detection/", views.live_detection, name="live_detection"),      
     
     path("detect_image/", views.detect_image, name="detect_image"),
 

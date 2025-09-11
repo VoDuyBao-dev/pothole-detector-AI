@@ -29,28 +29,26 @@ class UserProfile(models.Model):
         self.is_deleted = False
         self.save()
 
-
+# lưu thông tin ổ gà đầu tiên được phát hiện và các thông tin chung
 class Pothole(models.Model):
     STATUS_CHOICES = [
         ('active', 'Chưa sửa'),
         ('fixed', 'Đã sửa'),
     ]
-    # latitude = models.FloatField()     # Vĩ độ "chuẩn" (có thể lấy trung bình từ các phát hiện)
-    # longitude = models.FloatField()    # Kinh độ "chuẩn"
+
     first_detected_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    # first_detected_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')  # trạng thái ổ gà đã được sửa hay chưa
     confidence_avg = models.FloatField(default=0)   # trung bình độ tin cậy từ các phát hiện
     detections_count = models.PositiveIntegerField(default=1)  # tổng số lần phát hiện
 
-    # def __str__(self):
-    #     return f"Pothole {self.id} - {self.status}"
-
+    def __str__(self):
+        return f"Ổ gà {self.id} - {self.status}"
+# lưu hình ảnh của ổ gà phát hiện được ổ gà trùng cũng được chụp ảnh và lưu
 class PotholeImage(models.Model):
     image = models.ImageField(upload_to="potholes/")   # Django sẽ lưu path, file nằm trong MEDIA_ROOT
     uploaded_at = models.DateTimeField(default=timezone.now)
 
-
+# Lưu thông tin của tất cả ổ gà dù có là ổ gà trùng hay là người đầu tiên phát hiện ra ổ gà thì đều được lưu ở đây
 class PotholeDetection(models.Model):
     """Lưu tất cả các lần phát hiện ổ gà (bao gồm cả người đầu tiên)"""
     pothole = models.ForeignKey(Pothole, on_delete=models.CASCADE, related_name="detections")
@@ -58,7 +56,7 @@ class PotholeDetection(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
     size = models.CharField(max_length=20)          # chiều dài x chiều rộng của ổ gà 
-    level = models.CharField(max_length=10, choices=[('small', 'Nhỏ'), ('large', 'Lớn')])
+    level = models.CharField(max_length=10, choices=[('small', 'Nhỏ'), ('medium', 'Trung bình'), ('large', 'Lớn')])
     confidence = models.FloatField()
     area = models.FloatField(null=True, blank=True)       # diện tích của ổ gà 
     detected_at = models.DateTimeField(default=timezone.now)

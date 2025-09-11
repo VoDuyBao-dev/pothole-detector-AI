@@ -131,6 +131,8 @@ body.dark .info-panel {
   color: #ff4444;
 }
 
+
+
 @keyframes fadeInOut {
   0% {
     opacity: 0;

@@ -1,24 +1,18 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-import cv2, base64, json, os
-# import torch
-# from ultralytics import YOLO
-from openvino.runtime import Core
+import cv2, os, base64
 import numpy as np
-from django.http import StreamingHttpResponse, JsonResponse
+from django.http import  JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import os, tempfile, math
 from django.conf import settings
-from django.utils import timezone
 from .models import * 
-from django.contrib import messages
+from .ml_model import run_inference
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth import login, logout  
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth import login, logout 
 from django.core.paginator import Paginator
 
 import logging
@@ -58,8 +52,6 @@ def dashboard(request):
     return render(request, 'my_app/index.html')
 
 
-def live_detection(request):
-    return render(request, 'my_app/live_detection.html')
 
 def signin(request):
     if request.method == 'POST':
@@ -144,8 +136,6 @@ def delete_account(request):
     return redirect('account_list')
 
 
-def map(request):
-    return render(request, 'my_app/map.html')
 
 
 def _is_admin(user):
@@ -258,151 +248,45 @@ def map(request):
 
 
 
-# Load OpenVINO model
-MODEL_PATH = os.path.join(settings.BASE_DIR, 'models', 'pothole_best_openvino_model/pothole_best.xml')
-ie = Core()
-model_ov = ie.read_model(MODEL_PATH)
-compiled_model = ie.compile_model(model=model_ov, device_name="CPU")
-
-# Lấy input/output tensor
-input_layer = compiled_model.input(0)
-output_layer = compiled_model.output(0)
-
-
-
-# hiển thị thông báo ở một góc của giao diện
-def phatHienOGa(request):
-    messages.success(request, "Thêm ổ gà mới vào CSDL thành công!")
-def gpsWarning(request):
-    messages.error(request, "⚠️ Không có GPS, không thể lưu vị trí ổ gà!")
-
-# ================== HÀM HỖ TRỢ ==================
-def haversine(lat1, lon1, lat2, lon2):
-    """Tính khoảng cách giữa 2 toạ độ GPS (mét)"""
-    R = 6371000  # bán kính Trái Đất (m)
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    dphi = math.radians(lat2 - lat1)
-    dlambda = math.radians(lon2 - lon1)
-
-    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
-    distance = R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-    logger.debug(f"Haversine distance: {distance}")
-    return distance
-
-# Tìm ổ gà gần đó, nếu chưa có thì tạo mới 
-@login_required
-def get_or_create_pothole(request, user, lat, lon, confidence, size, area, level):
-    threshold = 3  # mét, bán kính gom cụm
-    nearby = None
-
-    # 🔹 Lọc trong phạm vi nhỏ quanh GPS trước rồi mới tính haversine(khoảng cách giữa 2 tọa độ) (tăng hiệu năng)
-    delta = 0.0001  # ~11m
-    candidates = Pothole.objects.filter(
-        latitude__range=(lat - delta, lat + delta),
-        longitude__range=(lon - delta, lon + delta)
-    )
-
-    for pothole in candidates:
-        if haversine(lat, lon, pothole.latitude, pothole.longitude) < threshold:
-            nearby = pothole
-            break
-    # 🔹 Nếu vẫn chưa có thì tạo mới
-    if nearby:
-        # Cập nhật thông tin tổng hợp
-        nearby.detections_count += 1
-        nearby.confidence_avg = (nearby.confidence_avg * (nearby.detections_count - 1) + confidence) / nearby.detections_count
-        nearby.save()
-    else:
-        # Tạo ổ gà mới
-        nearby = Pothole.objects.create(
-            latitude=lat,
-            longitude=lon,
-            first_detected_by=user,
-            confidence_avg=confidence,
-            detections_count=1
-        )
-        phatHienOGa(request)
-        logger.debug(f"Haversine distance: {nearby}")
-    # Luôn lưu detection mới
-    tmp = PotholeDetection.objects.create(
-        pothole=nearby,
-        user=user,
-        latitude=lat,
-        longitude=lon,
-        size=size,
-        confidence=confidence,
-        area=area,
-        level=level 
-    )
-    logger.debug(f"Haversine distance: {tmp}")
-
-    return nearby
-
-def live_detection_page(request):
-    return render(request, "my_app/live_detection.html")
-
 
 def live_detection(request):
     return render(request, "my_app/live_detection.html")
 
 
+def draw_boxes(frame, detections, conf_thres=0.25):
 
-def draw_boxes(frame, results, conf_thres=0.25):
-    preds = results.T  # (8400, 5)
-
-    h, w = frame.shape[:2]
-
-    for det in preds:
-        cx, cy, bw, bh, conf = det
-        conf = float(conf)   # ép về float
+    for det in detections:
+        conf = det["confidence"]
         if conf < conf_thres:
             continue
 
-        # Chuyển từ center_x,center_y,width,height -> toạ độ góc
-        x1 = int(cx - bw / 2)
-        y1 = int(cy - bh / 2)
-        x2 = int(cx + bw / 2)
-        y2 = int(cy + bh / 2)
+        x1, y1 = int(det["x"]), int(det["y"])
+        x2, y2 = int(x1 + det["width"]), int(y1 + det["height"])
 
-        # Scale theo kích thước ảnh gốc (nếu resize 640x640 trước khi input)
-        scale_x = w / 640
-        scale_y = h / 640
-        x1, x2 = int(x1 * scale_x), int(x2 * scale_x)
-        y1, y2 = int(y1 * scale_y), int(y2 * scale_y)
 
-        # Vẽ box
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 100, 0), 1)
+        # Vẽ bounding box
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 150, 0), 1)
 
-        # Chuẩn bị label
-        label = f"conf {conf:.2f}"
+        # Chuẩn bị text label
+        label = f"{det['label']} {conf:.2f}"
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 0.3
         font_thickness = 1
 
         # Tính kích thước text
         (text_w, text_h), baseline = cv2.getTextSize(label, font, font_scale, font_thickness)
-        
-        # Tính toán vị trí text và background
         text_x = x1
-        text_y = max(y1 - 4, text_h + 4)  # Đảm bảo text không bị cắt
-        
-        # Vẽ background đen cho text
-        cv2.rectangle(frame, 
-                     (text_x, text_y - text_h - baseline), 
-                     (text_x + text_w, text_y + baseline), 
-                     (0, 0, 0), 
-                     -1)  # -1 để fill đầy
+        text_y = max(y1 - 4, text_h + 4)  # để text không bị tràn ra ngoài
 
         # Vẽ text
-        cv2.putText(frame, 
-                   label, 
-                   (text_x, text_y),
-                   font, 
-                   font_scale,
-                   (255, 255, 255),  # Màu xanh lá
-                   font_thickness,
-                   cv2.LINE_AA)
+        cv2.putText(frame,
+                    label,
+                    (text_x, text_y),
+                    font,
+                    font_scale,
+                    (255, 255, 255),
+                    font_thickness,
+                    cv2.LINE_AA)
 
     return frame
 
@@ -410,20 +294,24 @@ def draw_boxes(frame, results, conf_thres=0.25):
 @csrf_exempt
 def detect_image(request):
     if request.method == "POST" and request.FILES.get("image"):
-        logger.debug("hello")
-        img = cv2.imdecode(np.frombuffer(request.FILES["image"].read(), np.uint8), cv2.IMREAD_COLOR)
-        resized = cv2.resize(img, (640, 640))
-        input_image = resized[:, :, ::-1].transpose(2, 0, 1)  # HWC->CHW, BGR->RGB
-        input_image = np.expand_dims(input_image, 0).astype(np.float32) / 255.0
+        # Đọc ảnh từ request
+        img = cv2.imdecode(
+            np.frombuffer(request.FILES["image"].read(), np.uint8), 
+            cv2.IMREAD_COLOR
+        )
 
-        # 3) Inference
-        results = compiled_model([input_image])[output_layer]
-        # for r in results:
-        #     logger.debug(f"Result array: {r}, shape: {r.shape}")  # In ra toàn bộ mảng và shape
-        img = draw_boxes(img, results, conf_thres=0.25)
+        # Gọi inference chung
+        detections = run_inference(img)
+        logger.debug(f"có bao nhiêu ổ gà trong ảnh: {detections}")
+        # Vẽ bounding boxes
+        img = draw_boxes(img, detections, conf_thres=0.25)
 
+        # Encode thành base64
         _, buffer = cv2.imencode(".jpg", img)
-        return JsonResponse({"image": buffer.tobytes().hex()})
+        img_base64 = base64.b64encode(buffer).decode("utf-8")
+
+        return JsonResponse({"image": img_base64})
+
     return JsonResponse({"error": "No image uploaded"})
 
 # Cấu hình Roboflow

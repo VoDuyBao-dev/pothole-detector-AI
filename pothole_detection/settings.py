@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+import logging
+logger = logging.getLogger('my_app')
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +28,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 # nếu để dòng @login_required ở trên một hàm thì nó sẽ kiểm tra xem người dùng đã đăng nhập chư nếu chưa thì chuyển sang trang đăng nhập
 LOGIN_URL = '/signin/'       # đường dẫn URL tới trang đăng nhập
 
-
 # STATIC_URL = "/static/"
 # MODEL_PATH = os.path.join(BASE_DIR, "models", "pothole_best.pt")
 
@@ -37,7 +39,6 @@ LOGIN_URL = '/signin/'       # đường dẫn URL tới trang đăng nhập
 SECRET_KEY = 'django-insecure-iqgbz7zqu@2f33^aq9zk#o%y&_^^0olfw7$@!o4@s9%ko!c*^='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -159,7 +160,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'my_app/static')]
+
+# Static chung toàn project (tùy bạn có dùng không)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
+# Static được collect khi deploy
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

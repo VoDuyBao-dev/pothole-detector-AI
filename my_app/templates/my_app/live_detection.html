@@ -7,6 +7,20 @@
     <title>Chạy trực tiếp</title>
     <link rel="stylesheet" href="{% static 'my_app/css/live_detection.css' %}" />
     <link rel="stylesheet" href="{% static 'my_app/css/sidebar.css' %}" />
+    <style>
+      .video-container {
+        position: relative;
+        display: inline-block;
+      }
+      #cameraFeed {
+        display: block;
+      }
+      #overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    </style>
   </head>
   <body data-theme="light">
     <!-- Sidebar -->
@@ -27,16 +41,7 @@
             Số ổ gà: <span id="pothole-count">0</span>
           </div>
           <div class="info-item">
-            Độ chính xác: <span id="confidence">-</span>
-          </div>
-          <div class="info-item">
-            Diện tích: <span id="area">-</span>
-          </div>
-          <div class="info-item">
-            Kích thước: <span id="size">-</span>
-          </div>
-          <div class="info-item">
-            Độ lớn: <span id="level">-</span>
+            Độ chính xác trung bình: <span id="confidence">-</span>
           </div>
           <div class="info-item">
             GPS: <span id="gps-status">Chưa bật</span>
@@ -66,15 +71,27 @@
           <div style="background-color:
             {% if 'error' in message.tags %}
               
+              
+              
                #e74c3c
+
+
 
             {% elif 'success' in message.tags %}
               
+              
+              
                #2ecc71
+
+
 
             {% else %}
               
+              
+              
                #f39c12
+
+
 
             {% endif %};
             color:white; padding:12px 20px; border-radius:8px; margin-bottom:10px;
@@ -85,7 +102,7 @@
 
     <script src="{% static 'my_app/js/live_detection.js' %}"></script>
     <script>
-      const detect_image = "{% url 'detect_image' %}" 
+      const detect_image = "{% url 'detect_image' %}"
     </script>
   </body>
 </html>

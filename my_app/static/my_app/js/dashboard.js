@@ -1,5 +1,5 @@
 // ===== THEME PERSISTENCE =====
-const root = document.documentElement;
+// const root = document.documentElement;
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme) root.setAttribute('data-theme', savedTheme);
 document.getElementById('themeToggle').addEventListener('click', () => {
