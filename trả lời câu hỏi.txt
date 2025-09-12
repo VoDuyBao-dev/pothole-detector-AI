@@ -1,0 +1,89 @@
+Dữ liệu lấy từ đâu, gồm bao nhiêu mẫu, có tiền xử lý/gán nhãn thế nào?
+Dự liệu lấy ở:  https://universe.roboflow.com/pothole-detector-dmdod/pothole-clzln/browse?queryText=&pageSize=50&startingIndex=0&browseQuery=true
+
+dataset sẵn có hơn 9000 ảnh chia thành 3 tập với train set là 81% (là tập huấn luyện), valid là 13%(là tập kiểm định), test set là 6% (là tập dùng để kiểm tra và đánh giá mô hình)
+
+Nhóm đã thử bao nhiêu thuật toán, cụ thể là những mô hình nào, và lý do chọn?
+link huấn luyện:  https://colab.research.google.com/drive/11Bf3UA4KJpI6Subm_egdPU4l_BJe2VmQ#scrollTo=sH00VHzN8CgA
+
+
+
+Đã chạy thử bao nhiêu lần, cách chia train/test, độ chính xác (precision, recall, mAP) đạt được?
+Bạn đã train 1 lần hoàn chỉnh với bộ dữ liệu trên Roboflow (≈ 9000 ảnh).
+Dataset chia: train 81%, validation 13%, test 6%.
+Kết quả sau khi training:
+Precision: ~0.87 (≈ 87%)       Trong tất cả các ổ gà mà mô hình dự đoán là ổ gà, có 87% là đúng.
+Recall: ~0.84 (≈ 84%)         Trong tất cả ổ gà thực sự tồn tại, mô hình phát hiện được 
+mAP@0.5: ~0.86 (≈ 86%)
+mAP@0.5:0.95: thấp hơn (≈ 0.65) → nghĩa là mô hình phát hiện tốt khi IoU = 0.5, nhưng khi yêu cầu IoU cao hơn thì giảm.
+IoU (Intersection over Union) = mức độ chồng lấn giữa box dự đoán và box thật.
+mAP@0.5: đo hiệu quả phát hiện ở mức "chấp nhận được" (box chồng ≥ 50%).
+mAP@0.5:0.95: đo hiệu quả phát hiện ở mức khó (box phải chồng gần chính xác).
+
+
+Mô hình chạy realtime không, fps bao nhiêu, trên CPU/GPU có khác biệt thế nào?
+
+Mô hình dựa trên đặc trưng gì để phát hiện ổ gà (texture, hình dạng, độ tối màu)?
+Detector học các đặc trưng phối hợp: hình dạng, biên dạng, kết cấu (texture) và tương phản màu (vùng tối/đổ bóng). CNN học các filter ở nhiều cấp để nhận diện pattern đặc trưng pothole (miệng ổ, bóng, mép răng cưa). Nói ngắn: shape + texture + contrast.
+
+Kết quả xuất ra dưới dạng nào (ảnh, video có bounding box, file log, cảnh báo)?
+Ảnh (base64) với bounding boxes trả về qua WebSocket, JSON chứa pothole_count và confidence_TB.
+Lưu PotholeImage (ảnh đã vẽ) và records Pothole / PotholeDetection trong DB.
+
+Có demo trực tiếp không, cần những bước nào để cài đặt và chạy mô hình?
+
+Hệ thống có thể áp dụng trong tình huống nào (giám sát đường, hỗ trợ tài xế, triển khai thiết bị nhúng)?
+
+Nhóm dựa vào tiêu chí nào để xác nhận vùng phát hiện là ổ gà (so sánh với dữ liệu thực tế, tiêu chuẩn ngành)?
+
+Nhóm dùng framework/thư viện nào (PyTorch, TensorFlow, OpenCV…), có tối ưu hóa hay deploy sang định dạng khác không?
+Ultralytics (YOLOv8/YOLO11) → train & inference model phát hiện ổ gà.
+PyTorch → framework deep learning, chạy training .pt.
+OpenVINO → tối ưu & deploy model trên CPU/edge device.
+Django + Channels → server, WebSocket truyền dữ liệu video & kết quả inference.
+cv2 (OpenCV) → xử lý ảnh/video frames.
+numpy → xử lý ma trận ảnh, toán học.
+asyncio/asgiref → xử lý bất đồng bộ, tránh block event loop.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Luồng di chuyển của dữ liệu:
+Client (trình duyệt) bật camera → capture frame → mã hóa base64 → gửi qua WebSocket tới endpoint /ws/detect/. GPS (nếu bật) gửi kèm.
+
+DetectionConsumer.receive:
+giải mã base64 → dùng OpenCV decode thành frame (BGR).
+gọi run_inference(frame)(chứa OpenVINO model) → trả về danh sách detections.
+vẽ tất cả bounding boxes lên 1 frame bằng draw_boxes (nghĩ là vẽ khung cho nhiều ổ gà trong 1 frame).
+nếu có GPS: lưu ảnh (frame_with_boxes) thành PotholeImage rồi với mỗi detection gọi get_or_create_pothole(user, lat, lon, det, pothole_image) để:
+	kiểm tra ổ gà đã tồn tại (> gần theo khoảng cách) → cập nhật ở bảng Pothole các thuộc tính  confidence_avg, detections_count hoặc tạo mới Pothole. Còn nếu ổ gà chưa tồn tại thì tạo bản ghi Pothole và cả PotholeDetection (liên kết ảnh).
+encode ảnh trả lại client (base64) và gửi JSON chứa pothole_count, image, timestamp, confidence_TB.
+
+Giải thích thêm về run_inference:
+tải/biên dịch model OpenVINO (cached).
+tiền xử lý: resize → BGR->RGB → scale /255 → transpose → shape [1, C, H, W].
+chạy model biên dịch → chuyển output → lọc theo conf_thres → scale các box về kích thước ảnh gốc → thu thập detections_raw.
+NMS thủ công (nms) → tính area, size, level cho mỗi detection → tính confidence_TB (trung bình tích lũy) → trả về danh sách dict detection.
+
+draw_boxes: vẽ rect + nhãn trên ảnh, trả về frame vẽ xong.
+
+Ngoài ra có endpoint POST /detect_image/ để upload ảnh single-shot (sử dụng cùng run_inference & draw_boxes).
+
+

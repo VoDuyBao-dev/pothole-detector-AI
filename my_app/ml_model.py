@@ -57,8 +57,8 @@ def draw_boxes(frame, detections, conf_thres=0.25):
 
     for det in detections:
         conf = det["confidence"] * 100
-        if conf < conf_thres:
-            continue
+        # if conf < conf_thres:
+        #     continue
 
         x1, y1 = int(det["x"]), int(det["y"])
         x2, y2 = int(x1 + det["width"]), int(y1 + det["height"])

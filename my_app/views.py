@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-import cv2, os, base64
+import cv2, os, base64, json
 import numpy as np
 from django.http import  JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -15,7 +15,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Min
-
+from django.db.models.functions import ExtractHour
+from django.utils.timezone import now
+from django.db.models import Avg
+from django.db.models import Count
+from django.utils.timezone import localdate
+from datetime import datetime, timedelta, timezone
 import logging
 logger = logging.getLogger('my_app')
 
@@ -135,8 +140,50 @@ def delete_account(request):
             messages.error(request, 'Tài khoản không tồn tại!')
         return redirect('account_list')
     return redirect('account_list')
+    
+# Trang dashboard
+@login_required
+def dashboard_view(request):
+    today = now() + timedelta(hours=7)
 
+    print(today)
+    detections = (
+        PotholeDetection.objects
+        .filter(detected_at__date=localdate())
+        .annotate(hour=ExtractHour("detected_at"))
+        .values("hour")
+        .annotate(count=Count("id"))
+        .order_by("hour")
+    )
 
+    labels = [d["hour"] for d in detections]
+    values = [d["count"] for d in detections]
+    print(labels, values)
+
+    # 1. Số ổ gà tháng này
+    pothole_this_month = PotholeDetection.objects.filter(
+        detected_at__month=today.month,
+        detected_at__year=today.year
+        ).count()
+    
+    # 3. Độ chính xác (ví dụ hardcode hoặc lấy từ model khác)
+    avg_confidence  = PotholeDetection.objects.aggregate(avg=Avg('confidence'))['avg']
+    if avg_confidence is not None:
+        accuracy = round(avg_confidence * 100, 2)  # Chuyển thành phần trăm và làm tròn
+    else:
+        accuracy = 0
+
+    # 4. Sự kiện gần đây (10 bản ghi mới nhất)
+    recent_events = PotholeDetection.objects.order_by("-id")[:10]
+
+    
+    context = {
+        "pothole_this_month": pothole_this_month,
+        "accuracy": accuracy,
+        "recent_events": recent_events,
+        "chart_data": json.dumps({"labels": labels, "values": values}),
+    }
+    return render(request, "my_app/index.html", context)
 
 
 def _is_admin(user):
@@ -321,40 +368,7 @@ def detect_image(request):
 
     return JsonResponse({"error": "No image uploaded"})
 
-# Cấu hình Roboflow
-ROBOFLOW_API_KEY = "rf_d8yBoanGX6bkEsX9Ex8ITPJwhcn2"
-ROBOFLOW_WORKSPACE = "vilan-qvsdh"
-ROBOFLOW_PROJECT = "pothole-detection-qaqag"
-ROBOFLOW_VERSION = 1
 
-def model_training(request):
-    code_snippet = None
-    uploaded_files = []
-
-    if request.method == "POST" and request.FILES.getlist("images"):
-        files = request.FILES.getlist("images")
-        save_path = os.path.join(settings.MEDIA_ROOT, "dataset")
-        os.makedirs(save_path, exist_ok=True)
-
-        for f in files:
-            file_path = os.path.join(save_path, f.name)
-            with open(file_path, "wb+") as dest:
-                for chunk in f.chunks():
-                    dest.write(chunk)
-            uploaded_files.append(f.name)
-
-        # Tạo đoạn code Colab sẵn sàng
-        code_snippet = f"""!pip install roboflow
-                            from roboflow import Roboflow
-                            rf = Roboflow(api_key="{ROBOFLOW_API_KEY}")
-                            project = rf.workspace("{ROBOFLOW_WORKSPACE}").project("{ROBOFLOW_PROJECT}")
-                            dataset = project.version({ROBOFLOW_VERSION}).download("yolov11")
-                            """
-
-    return render(request, "my_app/model_training.html", {
-        "uploaded_files": uploaded_files,
-        "code_snippet": code_snippet
-    })
 from django.views.decorators.http import require_GET
 @require_GET
 def pothole_data(request):

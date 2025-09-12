@@ -132,30 +132,30 @@ function connectWS() {
             console.log("WS closed")
             ws = null
         }
+        // Xử lý khi server gửi dữ liệu về
         ws.onmessage = (event) => {
             try {
-                const data = JSON.parse(event.data)   // event.data là chuỗi JSON → parse thành object data.
-                console.log("data received:", data)
+                const data = JSON.parse(event.data);
+                console.log("data received:", data);
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                if (data && data.detections && data.detections.length > 0) {
-                    document.getElementById('pothole-count').innerText = data.pothole_count
-                    document.getElementById('confidence').innerText = (data.confidence_TB * 100).toFixed(2)
+                if (data && data.image) {
+                    // cập nhật thông tin ổ gà
+                    document.getElementById("pothole-count").innerText = data.pothole_count || 0;
+                    document.getElementById("confidence").innerText = data.confidence_TB
+                        ? (data.confidence_TB * 100).toFixed(2)
+                        : "-";
 
-                    // Hiển thị ảnh đã vẽ box từ server
-                    const imgElement = document.getElementById("pothole-frame") || document.createElement("img")
-                    imgElement.id = "pothole-frame"
-                    imgElement.src = "data:image/jpeg;base64," + data.image
-                    imgElement.style.maxWidth = "100%"
-                    
-                    const resultDiv = document.getElementById("result")
-                    resultDiv.innerHTML = ""
-                    resultDiv.appendChild(imgElement)
-
+                    // tạo ảnh từ base64 do server trả về
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    };
+                    img.src = "data:image/jpeg;base64," + data.image;
                 } else {
-                    document.getElementById('pothole-count').innerText = '0'
-                    document.getElementById('confidence').innerText = '-'
+                    document.getElementById("pothole-count").innerText = "0";
+                    document.getElementById("confidence").innerText = "-";
                 }
             } catch (err) {
                 console.error("WS parse error:", err)

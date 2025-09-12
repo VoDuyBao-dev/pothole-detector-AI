@@ -11,7 +11,7 @@ urlpatterns = [
     path('signout/', views.signout, name='signout'),
     
     # users
-    path('', views.dashboard, name= 'dashboard'),
+    path('', views.dashboard_view, name= 'dashboard'),
 
     path("live_detection/", views.live_detection, name="live_detection"),      
     
@@ -24,7 +24,6 @@ urlpatterns = [
 
     # admin
     # path('account_management/', views.account_management, name='account_management'),
-    path('model_training/', views.model_training, name='model_training'),
     # Thêm tài khoản của admin
     path('register/', register_view, name='register'),
     # quản lý tài khoản của admin

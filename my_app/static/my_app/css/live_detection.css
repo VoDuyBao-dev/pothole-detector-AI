@@ -124,7 +124,7 @@ body.dark .info-panel {
 }
 
 .status-active {
-  color: var(--accent);
+  color: #7eea82ff;
 }
 
 .status-inactive {
