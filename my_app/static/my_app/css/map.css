@@ -1,53 +1,181 @@
   :root {
-        --primary: #74bbeeff;
-        --accent-pink: #fd91fdff;
-        --accent-green: #7eea82ff;
-        --bg-light: #eef6ff;
-        --text-dark: #333;
-        --text-light: #fff;
-      }
-      
-      body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: var(--bg-light);
-        color: var(--text-dark);
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-      }
-      
-      .map-container {
-        flex: 1;
-        height: 100vh;
-      }
-      
-      #map {
-        width: 100%;
-        height: 100%;
-      }
-      
-      .legend {
-        background: white;
-        padding: 10px;
-        border-radius: 8px;
-        line-height: 1.5;
-        font-size: 14px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      }
-      
-      .legend span {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        margin-right: 6px;
-        border-radius: 50%;
-      }
-      
-      .dot-small {
-        background: green;
-      }
-      
-      .dot-large {
-        background: red;
-      }
+    --primary: #74bbeeff;
+    --accent-pink: #fd91fdff;
+    --accent-green: #7eea82ff;
+    --bg-light: #eef6ff;
+    --text-dark: #333;
+    --text-light: #fff;
+  }
+
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--bg-light);
+    color: var(--text-dark);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .map-container {
+    flex: 1;
+    height: 100vh;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+  }
+
+  .legend {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    line-height: 1.5;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .legend span {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;
+    border-radius: 50%;
+  }
+
+  .dot-small {
+    background: green;
+  }
+
+  .dot-large {
+    background: red;
+  }
+
+  /* ==========================
+   GPS / Info panel — Large UI
+   ========================== */
+
+  /* Container item */
+  .info-item {
+    display: block;
+    align-items: center;
+    gap: 12px;
+    /* khoảng cách giữa label và giá trị / nút */
+    margin: 12px 3px;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-size: 18px;
+    /* chữ to cho toàn item */
+    line-height: 1.2;
+    color: #222;
+  }
+
+  /* Label value (ví dụ: "GPS:" giữ nguyên phong cách, giá trị to hơn) */
+  .info-item>span#gps-status {
+    display: block;
+    position: relative;
+    min-width: 220px;
+    /* giữ không gian ổn định */
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.04);
+    font-weight: 600;
+    font-size: 18px;
+    /* giá trị cũng lớn */
+    color: #333;
+    text-align: left;
+  }
+
+  /* Button chung */
+  .btn {
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    padding: 10px 14px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    user-select: none;
+    font-size: 16px;
+    margin: 5px 0;
+  }
+
+  /* Kiểu nút GPS */
+  .btn-gps {
+    background: #f0f0f0;
+    color: #1f2937;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  /* Trạng thái active của nút (khi bật GPS) */
+  .btn-gps.btn-active,
+  #gpsToggle.btn-active {
+    background: linear-gradient(90deg, #07b39b, #0fa889);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(11, 128, 106, 0.18);
+  }
+
+  /* Hover/focus cho accessibility */
+  .btn-gps:hover,
+  .btn-gps:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    outline: none;
+  }
+
+  /* Trạng thái hiển thị text màu xanh/đỏ tùy active/inactive */
+  .status-active {
+    background: rgba(6, 182, 155, 0.08);
+    color: #057a66;
+    border: 1px solid rgba(6, 182, 155, 0.12);
+    font-weight: 700;
+  }
+
+  .status-inactive {
+    background: rgba(220, 38, 38, 0.06);
+    color: #8b1f1f;
+    border: 1px solid rgba(220, 38, 38, 0.08);
+    font-weight: 600;
+  }
+
+  /* Kích thước lớn hơn cho màn hình to */
+  @media (min-width: 1200px) {
+    .info-item {
+      font-size: 20px;
+      gap: 16px;
+    }
+
+    .info-item>span#gps-status {
+      min-width: 260px;
+      font-size: 20px;
+      padding: 10px 14px;
+    }
+
+    .btn {
+      font-size: 18px;
+      padding: 12px 16px;
+      border-radius: 14px;
+    }
+  }
+
+  /* Dark theme support (body.dark được dùng trong project của bạn) */
+  body.dark .info-item {
+    color: #e6eef6;
+  }
+
+  body.dark .info-item>span#gps-status {
+    background: rgba(255, 255, 255, 0.04);
+    color: #e6eef6;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  body.dark .btn-gps {
+    background: rgba(255, 255, 255, 0.03);
+    color: #e6eef6;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  body.dark .btn-gps.btn-active {
+    box-shadow: 0 6px 18px rgba(11, 128, 106, 0.16);
+  }
