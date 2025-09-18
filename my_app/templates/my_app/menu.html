@@ -10,7 +10,7 @@
     </div>
 
     <nav class="menu" id="menu">
-      <a class="active" href="{% url 'dashboard' %}" data-route="dashboard">
+      <a href="{% url 'dashboard' %}" data-route="dashboard">
         <span aria-hidden="true">🏠</span>
         <span>Tổng quan</span>
         <span class="badge">Live</span>
@@ -31,11 +31,11 @@
         <span class="badge">Logs</span>
       </a>
       {% if request.user.is_superuser %}
-      <a href="{% url 'account_list' %}" data-route="account">
-        <span aria-hidden="true">👤</span>
-        <span>Quản lí tài khoản</span>
-        <span class="badge">User</span>
-      </a>
+        <a href="{% url 'account_list' %}" data-route="account">
+          <span aria-hidden="true">👤</span>
+          <span>Quản lí tài khoản</span>
+          <span class="badge">User</span>
+        </a>
       {% endif %}
       <a href="{% url 'signout' %}" data-route="signout">
         <span aria-hidden="true">🚪</span>
@@ -68,6 +68,26 @@
     a.addEventListener('click', (e) => {
       document.querySelectorAll('#menu a').forEach((el) => el.classList.remove('active'))
       a.classList.add('active')
+    })
+  })
+  document.addEventListener('DOMContentLoaded', function () {
+    const links = document.querySelectorAll('#menu a')
+    const currentUrl = window.location.pathname
+  
+    links.forEach((link) => {
+      // Bỏ class active cũ
+      link.classList.remove('active')
+  
+      // So sánh URL hiện tại với href trong menu
+      if (link.getAttribute('href') === currentUrl) {
+        link.classList.add('active')
+      }
+  
+      // Nếu bạn vẫn muốn đổi active khi click (không reload trang)
+      link.addEventListener('click', function () {
+        links.forEach((l) => l.classList.remove('active'))
+        this.classList.add('active')
+      })
     })
   })
 </script>

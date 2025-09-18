@@ -25,7 +25,7 @@ def haversine(lat1, lon1, lat2, lon2):
 
 
 @database_sync_to_async
-def get_or_create_pothole(user, lat, lon, det, pothole_image):
+def get_or_create_pothole(user, lat, lon, det, frame_with_boxes):
     """
     Kiểm tra ổ gà đã tồn tại chưa.
     Nếu có: cập nhật lại confidence_avg + detections_count.
@@ -68,31 +68,38 @@ def get_or_create_pothole(user, lat, lon, det, pothole_image):
             status="active",
         )
 
-    # Tạo bản ghi detection
-    PotholeDetection.objects.create(
+    exists = PotholeDetection.objects.filter(
         pothole=nearby,
-        user=user,
-        latitude=lat,
-        longitude=lon,
-        size=size,
-        confidence=confidence,
-        area=area,
-        level=level,
-        detected_at=timezone.now(),
-        potholeImage_id=pothole_image
-    )
+        user=user
+    ).exists()
+
+    if not nearby or not exists:
+        pothole_image = save_pothole_image(frame_with_boxes)  # ✅ trả về instance thật
+        PotholeDetection.objects.create(
+            pothole=nearby,
+            user=user,
+            latitude=lat,
+            longitude=lon,
+            size=size,
+            confidence=confidence,
+            area=area,
+            level=level,
+            detected_at=timezone.now(),
+            potholeImage_id=pothole_image  # ✅ gán instance trực tiếp
+        )
 
     return nearby
 
 
-@database_sync_to_async
 def save_pothole_image(frame):
     """Lưu frame có bounding box thành 1 bản ghi PotholeImage"""
     _, buffer = cv2.imencode(".jpg", frame)
-    image_file = ContentFile(buffer.tobytes(), name=f"pothole_{timezone.now().strftime('%Y%m%d_%H%M%S')}.jpg")
+    image_file = ContentFile(
+        buffer.tobytes(),
+        name=f"pothole_{timezone.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+    )
     pothole_image = PotholeImage.objects.create(image=image_file)
     return pothole_image
-
 
 # ================== WEBSOCKET CONSUMER ==================
 class DetectionConsumer(AsyncWebsocketConsumer):
@@ -122,14 +129,12 @@ class DetectionConsumer(AsyncWebsocketConsumer):
             # Vẽ 1 frame duy nhất với tất cả bounding boxes
             frame_with_boxes = draw_boxes(frame.copy(), detections, conf_thres=0.25)
 
-            pothole_image = None
             if gps and "lat" in gps and "lon" in gps:
                 lat, lon = float(gps["lat"]), float(gps["lon"])
-                pothole_image = await save_pothole_image(frame_with_boxes)
 
                 # Với mỗi ổ gà → tạo detection + cập nhật Pothole
                 for det in detections:
-                    await get_or_create_pothole(user, lat, lon, det, pothole_image)
+                    await get_or_create_pothole(user, lat, lon, det, frame_with_boxes)
             else:
                 logger.warning("⚠️ Không có GPS → chỉ trả về ảnh bounding box")
 
@@ -148,3 +153,7 @@ class DetectionConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Lỗi trong DetectionConsumer: {str(e)}", exc_info=True)
             await self.send(text_data=json.dumps({"error": str(e)}))
+
+
+
+

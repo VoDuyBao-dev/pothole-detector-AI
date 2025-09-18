@@ -206,7 +206,7 @@ def history(request):
             .select_related("first_detected_by")
             .order_by("id")  # Sắp xếp tăng dần theo id
         )
-        paginator = Paginator(potholes, 8)
+        paginator = Paginator(potholes, 10)
         potholes = paginator.get_page(page_number)
 
         # Xử lý confidence_avg cho từng item trong trang hiện tại
@@ -223,10 +223,10 @@ def history(request):
             PotholeDetection.objects
             .filter(user=request.user)
             .select_related("pothole")            # để lấy pothole.confidence_avg
-            .prefetch_related("images")           # để hiển thị ảnh nhanh
+            .select_related("potholeImage_id")           # để hiển thị ảnh nhanh
             .order_by("detected_at")
         )
-        paginator = Paginator(detections, 8)
+        paginator = Paginator(detections, 10)
         detections = paginator.get_page(page_number)
 
         for d in detections:
@@ -247,7 +247,8 @@ def pothole_detail(request, pothole_id):
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         data = []
         for d in detections:
-            img_url = d.images.first().image.url if d.images.exists() else ""
+            img_url = d.potholeImage_id.image.url if d.potholeImage_id and d.potholeImage_id.image else ""
+            logger.debug(f'image: {img_url}')
             data.append({
                 "pothole_id": d.pothole.id,
                 "image_url": img_url,
